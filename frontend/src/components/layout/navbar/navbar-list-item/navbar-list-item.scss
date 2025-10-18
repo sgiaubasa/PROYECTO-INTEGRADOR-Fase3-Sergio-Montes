@@ -1,0 +1,32 @@
+@use "@/scss/variables" as var;
+
+.navbar-list-item {
+    &__link {
+        display: flex;
+        align-items: center;
+        gap: var.$spacing-xs;
+        padding: var.$spacing-xs;
+    }
+
+    &__icon {
+        display: none !important;
+        color: var.$color-primary-600;
+    }
+
+    &__label {
+        color: var.$color-primary-700;
+        font-size: var.$font-size-md;
+        font-weight: inherit;
+    }
+
+    &:hover,
+    &--active {
+        font-weight: var.$font-weight-bold;
+    }
+
+    @media screen and (max-width: 768px) {
+        &__icon {
+            display: block !important;
+        }
+    }
+}

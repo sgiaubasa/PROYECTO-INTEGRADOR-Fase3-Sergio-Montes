@@ -1,0 +1,26 @@
+@use "@/scss/variables" as var;
+
+.navbar {
+    grid-area: navbar;
+
+    padding: var.$spacing-sm !important;
+    background-color: var.$color-primary-300;
+
+    &__menu-icon,
+    &__menu-drawer {
+        color: var.$color-primary-700;
+        display: none !important;
+    }
+
+    @media (max-width: 768px) {
+
+        &__menu-icon,
+        &__menu-drawer {
+            display: block !important;
+        }
+
+        &__menu-list {
+            display: none !important;
+        }
+    }
+}

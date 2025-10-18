@@ -1,0 +1,45 @@
+@use "@/scss/variables" as var;
+
+
+.shopping-cart {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var.$spacing-lg;
+    padding: var.$spacing-lg;
+
+    .table {
+        &__head {
+            th {
+                color: var.$color-neutro-600;
+                font-weight: var.$font-weight-regular;
+                font-size: var.$font-size-sm;
+            }
+        }
+
+        &__body {
+            &:hover {
+                background-color: var.$color-neutro-300;
+            }
+
+            td {
+                color: var.$color-neutro-800;
+                font-weight: var.$font-weight-regular;
+                font-size: var.$font-size-sm;
+            }
+        }
+
+        &__footer {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            gap: var.$spacing-sm;
+        }
+
+        &__total {
+            color: var.$color-neutro-800;
+            font-weight: var.$font-weight-bold;
+            font-size: var.$font-size-sm;
+        }
+    }
+}

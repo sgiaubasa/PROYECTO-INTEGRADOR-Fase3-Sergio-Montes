@@ -1,0 +1,21 @@
+{
+  "name": "proyecto-integrador-eit",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build": "npm run install:all && cd frontend && npm run build",
+    "dev": "concurrently \"cd backend && npm run dev\" \"cd frontend && npm run dev\"",
+    "lint": "concurrently \"cd backend && npm run lint\" \"cd frontend && npm run lint\""
+  },
+  "keywords": [],
+  "author": "Sergio Regalado Alessi",
+  "license": "MIT",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

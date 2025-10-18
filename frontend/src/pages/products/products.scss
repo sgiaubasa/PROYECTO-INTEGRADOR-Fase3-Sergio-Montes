@@ -1,0 +1,9 @@
+@use "@/scss/variables" as var;
+
+.products {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var.$spacing-lg;
+    padding: var.$spacing-lg;
+}

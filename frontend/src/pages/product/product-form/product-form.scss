@@ -1,0 +1,14 @@
+@use "@/scss/variables" as var;
+
+.product-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var.$spacing-xl;
+    width: 400px;
+
+    &__actions {
+        display: flex;
+        gap: var.$spacing-md;
+    }
+}
