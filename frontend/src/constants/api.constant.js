@@ -1,12 +1,19 @@
-const getApiUrl = () => {
-    if (import.meta.env.DEV) {
-        // En desarrollo, se usa localhost
-        return "http://localhost:3000/api";
-    }
+// frontend/src/constants/api.constant.js
 
-    // En Vercel, se usa la ruta relativa porque el backend está en el mismo dominio
-    return "/api";
+// Detecta entorno (local vs producción)
+const getApiBase = () => {
+  if (import.meta.env.DEV) {
+    return "http://localhost:3000/api"; // backend local
+  }
+  return "/api"; // producción (Vercel, etc.)
 };
 
-export const API_URL = getApiUrl();
-export const API_URL_IMAGES = `${API_URL}/public/images`;
+// URL base de la API
+export const API = getApiBase();
+
+// Alias alternativo, por compatibilidad con algunos imports antiguos
+export const API_URL = API;
+
+// Ruta base para imágenes
+export const API_URL_IMAGES = `${API}/public/images`;
+

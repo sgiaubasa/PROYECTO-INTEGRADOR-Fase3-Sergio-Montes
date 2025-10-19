@@ -1,21 +1,26 @@
-import ErrorService from "../services/error.service.js";
-import InstitutionService from "../services/institution.service.js";
+// backend/src/controllers/institution.controller.js
+import Institution from "../models/institution.model.js";
 
 export default class InstitutionController {
-    #institutionService;
-
-    constructor() {
-        this.#institutionService = new InstitutionService();
+  async findFirst(req, res) {
+    try {
+      const inst = await Institution.findOne().lean();
+      if (!inst) return res.status(404).json({ status: "error", message: "Institution not found" });
+      res.json({ status: "success", payload: inst });
+    } catch (e) {
+      console.error(e);
+      res.status(500).json({ status: "error", message: "Internal error" });
     }
+  }
 
-    async findFirst(req, res) {
-        try {
-            const institution = await this.#institutionService.findFirst();
-
-            res.status(200).json({ status: "success", payload: institution });
-        } catch (error) {
-            const handledError = ErrorService.handleError(error);
-            res.status(handledError.code).json({ status: "error", message: handledError.message });
-        }
+  // usado por el router para crear (sin next)
+  async createRaw(body) {
+    // VALIDACIÓN rápida al nivel app: respeta tus límites de schema
+    if (!body?.name || body.name.length > 25) {
+      throw new Error("El nombre es obligatorio y debe tener máx. 25 caracteres");
     }
+    return await Institution.create(body);
+  }
 }
+
+
