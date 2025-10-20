@@ -16,21 +16,28 @@
     }
   ],
   "routes": [
+    /* Archivos públicos del backend */
     {
-      "src": "/api/public/(.*)",
+      "src": "^/api/public/(.*)$",
       "dest": "backend/public/$1"
     },
+
+    /* Endpoints de la API (Express) */
     {
-      "src": "/api/(.*)",
+      "src": "^/api/(.*)$",
       "dest": "api/index.js"
     },
+
+    /* Archivos estáticos generados por el build del frontend */
     {
-      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|ttf|svg))",
-      "dest": "frontend/dist/$1"
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|ttf|svg|webp|woff|woff2|map))",
+      "dest": "/$1"
     },
+
+    /* Fallback SPA (para React Router u otras rutas del front) */
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/index.html"
+      "dest": "/index.html"
     }
   ]
 }
