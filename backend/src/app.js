@@ -1,3 +1,4 @@
+// backend/app.js
 import "dotenv/config";
 import express from "express";
 import { config as configCors } from "./config/cors.config.js";
@@ -12,20 +13,21 @@ import productRouter from "./routes/product.router.js";
 const app = express();
 
 /* ---------- Middlewares base (orden recomendado) ---------- */
-configCors(app);                // CORS primero (usa FRONTEND_HOST/.env)
-app.use(express.json({ limit: "2mb" })); // Parser JSON explícito (a prueba de balas)
-configJson(app);                // Tu config JSON (si agrega algo extra)
-configStatic(app);              // Archivos estáticos (/api/public/images)
+configCors(app);                              // CORS (usa FRONTEND_HOST/.env)
+app.use(express.json({ limit: "2mb" }));     // Parser JSON explícito
+configJson(app);                              // Tu config JSON
+configStatic(app);                            // Archivos estáticos (/api/public/images)
 
 /* ---------- Base de datos ---------- */
 connectDB();
 
 /* ---------- Rutas ---------- */
+app.get("/api/health", (req, res) => res.json({ ok: true })); // <- para test rápido
 app.use("/api/institutions", institutionRouter);
 app.use("/api/products", productRouter);
 app.use("/api/inquiry", inquiryRouter);
 
-/* ---------- Manejo global de errores (evita requests colgadas) ---------- */
+/* ---------- Manejo global de errores ---------- */
 app.use((err, req, res, next) => {
   console.error("Unhandled error:", err);
   res.status(500).json({
@@ -52,3 +54,4 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export default app;
+

@@ -6,7 +6,7 @@
       "use": "@vercel/static"
     },
     {
-      "src": "backend/src/app.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
     },
     {
@@ -22,15 +22,15 @@
     },
     {
       "src": "/api/(.*)",
-      "dest": "backend/src/app.js"
+      "dest": "api/index.js"
     },
     {
       "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|ttf|svg))",
-      "dest": "frontend/$1"
+      "dest": "frontend/dist/$1"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/index.html"
+      "dest": "frontend/dist/index.html"
     }
   ]
 }

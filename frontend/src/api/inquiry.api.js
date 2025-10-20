@@ -2,7 +2,8 @@ import { API_URL } from "@/constants/api.constant.js";
 
 const sendInquiry = async (values) => {
     try {
-        const response = await fetch(`${API_URL}/inquiry/send-mail`, {
+        // 🔧 corregimos endpoint: sin "/send-mail"
+        const response = await fetch(`${API_URL}/inquiry`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -10,16 +11,14 @@ const sendInquiry = async (values) => {
             body: JSON.stringify(values),
         });
 
-        if (response.status === 204) {
-            return true;
-        }
+        // 🔍 Intentamos parsear la respuesta
+        const data = await response.json().catch(() => ({}));
 
-        if (!response.ok) {
-            const data = await response.json();
+        if (!response.ok || data.status !== "success") {
             throw new Error(data.message || "Error al enviar la consulta");
         }
 
-        return true;
+        return true; // Éxito
     } catch (error) {
         console.error(`Error al enviar la consulta. Causa: ${error.message}`);
         throw error;
