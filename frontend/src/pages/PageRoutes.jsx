@@ -1,7 +1,8 @@
-import { Route, Routes } from "react-router-dom";
-
 import { lazy, Suspense } from "react";
+import { Route, Routes } from "react-router-dom";
+import ProductDetail from "./products/detail/ProductDetail"; // ✅ nuevo import
 
+// Rutas principales cargadas con lazy
 const Home = lazy(() => import("./home/Home"));
 const About = lazy(() => import("./about/About"));
 const Contact = lazy(() => import("./contact/Contact"));
@@ -13,16 +14,24 @@ const PageRoutes = () => {
     return (
         <Suspense fallback="Cargando página...">
             <Routes>
+                {/* Página principal */}
                 <Route path="/" element={<Home />} />
+
+                {/* Secciones informativas */}
                 <Route path="/about" element={<About />} />
                 <Route path="/contact" element={<Contact />} />
+
+                {/* Productos */}
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/new" element={<Product />} />
-                <Route path="/products/:id" element={<Product />} />
+
+                {/* ✅ Nueva ruta para el detalle de producto */}
+                <Route path="/products/:id" element={<ProductDetail />} />
+
+                {/* Carrito de compras */}
                 <Route path="/shopping-cart" element={<ShoppingCart />} />
             </Routes>
         </Suspense>
-
     );
 };
 
