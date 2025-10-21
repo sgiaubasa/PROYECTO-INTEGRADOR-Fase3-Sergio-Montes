@@ -2,114 +2,109 @@ import { useEffect, useState } from "react";
 import productsApi from "../api/products.api.js";
 
 export const useProduct = () => {
-    const [ products, setProducts ] = useState([]);
-    const [ isLoading, setIsLoading ] = useState(false);
-    const [ error, setError ] = useState(null);
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-    const fetchProducts = async () => {
-        setIsLoading(true);
-        setError(null);
+  // ✅ Filtros controlados por estado
+  const [filters, setFilters] = useState({
+    name: "",
+    highlighted: undefined, // true | false | undefined
+    limit: 20,
+  });
 
-        try {
-            const data = await productsApi.fetchProducts();
-            setProducts(data);
-        } catch (error) {
-            setProducts([]);
-            setError(error.message || "Error al cargar productos.");
-        }
+  const fetchProducts = async () => {
+    setIsLoading(true);
+    setError(null);
 
-        setIsLoading(false);
-    };
+    try {
+      const data = await productsApi.fetchProducts(filters);
+      setProducts(data);
+    } catch (error) {
+      setProducts([]);
+      setError(error.message || "Error al cargar productos.");
+    }
 
-    const fetchProductById = async (id) => {
-        setIsLoading(true);
-        setError(null);
-        let product = null;
+    setIsLoading(false);
+  };
 
-        try {
-            product = await productsApi.fetchProductById(id);
-        } catch (error) {
-            setError(error.message || "Error al carga producto.");
-        }
+  const fetchProductById = async (id) => {
+    setIsLoading(true);
+    setError(null);
+    let product = null;
 
-        setIsLoading(false);
-        return product;
-    };
+    try {
+      product = await productsApi.fetchProductById(id);
+    } catch (error) {
+      setError(error.message || "Error al cargar producto.");
+    }
 
-    const createProduct = async (values) => {
-        setIsLoading(true);
-        setError(null);
-        let product = null;
+    setIsLoading(false);
+    return product;
+  };
 
-        try {
-            product = await productsApi.createProduct(values);
-            fetchProducts();
-        } catch (error) {
-            setError(error.message || "Error al crear producto.");
-        }
+  const createProduct = async (values) => {
+    setIsLoading(true);
+    setError(null);
+    let product = null;
 
-        setIsLoading(false);
-        return product;
-    };
+    try {
+      product = await productsApi.createProduct(values);
+      fetchProducts();
+    } catch (error) {
+      setError(error.message || "Error al crear producto.");
+    }
 
-    const updateProduct = async (id, values) => {
-        setIsLoading(true);
-        setError(null);
-        let product = null;
+    setIsLoading(false);
+    return product;
+  };
 
-        try {
-            product = await productsApi.updateProduct(id, values);
-            fetchProducts();
-        } catch (error) {
-            setError(error.message || "Error al modificar producto.");
-        }
+  const updateProduct = async (id, values) => {
+    setIsLoading(true);
+    setError(null);
+    let product = null;
 
-        setIsLoading(false);
-        return product;
-    };
+    try {
+      product = await productsApi.updateProduct(id, values);
+      fetchProducts();
+    } catch (error) {
+      setError(error.message || "Error al modificar producto.");
+    }
 
-    const removeProduct = async (id) => {
-        setIsLoading(true);
-        setError(null);
+    setIsLoading(false);
+    return product;
+  };
 
-        try {
-            await productsApi.removeProduct(id);
-            fetchProducts();
-        } catch (error) {
-            setError(error.message || "Error al eliminar producto.");
-        }
+  const removeProduct = async (id) => {
+    setIsLoading(true);
+    setError(null);
 
-        setIsLoading(false);
-    };
+    try {
+      await productsApi.removeProduct(id);
+      fetchProducts();
+    } catch (error) {
+      setError(error.message || "Error al eliminar producto.");
+    }
 
-    const checkProductStock = async (id) => {
-        setIsLoading(true);
-        setError(null);
-        let result = false;
+    setIsLoading(false);
+  };
 
-        try {
-            result = await productsApi.checkProductStock(id);
-        } catch (error) {
-            setError(error.message || "Error al chequear stock de producto.");
-        }
+  // ✅ Re-fetch cuando cambian filtros
+  useEffect(() => {
+    fetchProducts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
-        setIsLoading(false);
-        return result;
-    };
-
-    useEffect(() => {
-        fetchProducts();
-    }, []);
-
-    return {
-        products,
-        isLoading,
-        error,
-        fetchProducts,
-        fetchProductById,
-        createProduct,
-        updateProduct,
-        removeProduct,
-        checkProductStock,
-    };
+  return {
+    products,
+    isLoading,
+    error,
+    fetchProducts,
+    fetchProductById,
+    createProduct,
+    updateProduct,
+    removeProduct,
+    filters,
+    setFilters,
+  };
 };
