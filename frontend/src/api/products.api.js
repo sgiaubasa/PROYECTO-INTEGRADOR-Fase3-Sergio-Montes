@@ -60,7 +60,7 @@ const fetchProductById = async (id) => {
   }
 };
 
-// ✅ compat: acepta file en values.thumbnail o values.image
+// compat: acepta file en values.thumbnail o values.image
 const createProduct = async (values) => {
   try {
     const formData = new FormData();
@@ -96,7 +96,7 @@ const createProduct = async (values) => {
   }
 };
 
-// ✅ compat: acepta file en values.thumbnail o values.image
+// compat: acepta file en values.thumbnail o values.image
 const updateProduct = async (id, values) => {
   try {
     const formData = new FormData();
@@ -172,6 +172,31 @@ const fetchHighlightedProducts = async () => {
   }
 };
 
+/** ✅ NUEVO: compra — descuenta stock en el backend */
+const purchaseProducts = async (items) => {
+  // items: [{ id, qty }]
+  try {
+    const res = await fetch(`${API_URL}/products/purchase`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items }),
+    });
+    const data = await res.json();
+
+    if (res.ok && data.status === "success") return data;
+
+    if (res.status === 409) {
+      const error = new Error(data.message || "Stock insuficiente");
+      error.payload = data.payload;
+      throw error;
+    }
+    throw new Error(data.message || "Error al procesar la compra");
+  } catch (error) {
+    console.error("purchaseProducts error:", error);
+    throw error;
+  }
+};
+
 export default {
   fetchProducts,
   fetchProductById,
@@ -179,6 +204,7 @@ export default {
   updateProduct,
   removeProduct,
   fetchHighlightedProducts,
+  purchaseProducts, // 👈 nuevo
 };
 
 

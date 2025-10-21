@@ -88,6 +88,13 @@ export const useProduct = () => {
     setIsLoading(false);
   };
 
+  /** ✅ NUEVO: compra (descuenta stock) */
+  const purchase = async (items) => {
+    const resp = await productsApi.purchaseProducts(items);
+    await fetchProducts(); // refrescamos stocks
+    return resp;
+  };
+
   // Re-fetch cuando cambian filtros
   useEffect(() => {
     fetchProducts();
@@ -105,6 +112,8 @@ export const useProduct = () => {
     removeProduct,
     filters,
     setFilters,
+    purchase, // 👈 nuevo
   };
 };
+
 

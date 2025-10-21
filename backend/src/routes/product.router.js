@@ -32,11 +32,15 @@ const upload = multer({
 router.get("/", productController.findAll.bind(productController));
 router.get("/:id", productController.findById.bind(productController));
 
-// 👇 Campo del archivo DEBE ser 'thumbnail' (coincide con el frontend)
+// Campo del archivo DEBE ser 'thumbnail' (coincide con el frontend)
 router.post("/", upload.single("thumbnail"), productController.create.bind(productController));
 router.put("/:id", upload.single("thumbnail"), productController.update.bind(productController));
 router.delete("/:id", productController.delete.bind(productController));
 
+/** ✅ NUEVO: endpoint de compra — descuenta stock de forma segura */
+router.post("/purchase", productController.purchase.bind(productController));
+
 export default router;
+
 
 
