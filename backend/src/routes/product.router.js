@@ -1,24 +1,22 @@
 import { Router } from "express";
+import fs from "fs";
 import multer from "multer";
+import path from "path";
 import ProductController from "../controllers/product.controller.js";
-import paths from "../utils/paths.js"; // ya lo usás en el controller
 
 const router = Router();
 const productController = new ProductController();
 
-/**
- * paths.imagesProducts debería ser algo como:
- *   path.resolve(__dirname, "..", "public", "images", "products")
- * y tu static sirve '/api/public' desde 'public'
- */
+/** Carpeta robusta, independientemente del cwd */
+const imagesDir = path.join(process.cwd(), "backend", "public", "images", "products");
+if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 
-// Storage: guarda SIEMPRE en /public/images/products y usa el nombre original
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, paths.imagesProducts),
+  destination: (req, file, cb) => cb(null, imagesDir),
+  // si preferís conservar el original, dejá file.originalname; si no, generá uno único
   filename: (req, file, cb) => cb(null, file.originalname),
 });
 
-// Opcional: limitar a imágenes
 const fileFilter = (req, file, cb) => {
   if (/^image\//.test(file.mimetype)) return cb(null, true);
   cb(new Error("Solo se permiten imágenes"));
@@ -34,11 +32,11 @@ const upload = multer({
 router.get("/", productController.findAll.bind(productController));
 router.get("/:id", productController.findById.bind(productController));
 
-// ⚠️ ESTA es la clave para Postman: el campo debe llamarse 'thumbnail'
+// 👇 Campo del archivo DEBE ser 'thumbnail' (coincide con el frontend)
 router.post("/", upload.single("thumbnail"), productController.create.bind(productController));
-
 router.put("/:id", upload.single("thumbnail"), productController.update.bind(productController));
 router.delete("/:id", productController.delete.bind(productController));
 
 export default router;
+
 

@@ -1,6 +1,7 @@
 // backend/app.js
 import "dotenv/config";
 import express from "express";
+import path from "path";
 import { config as configCors } from "./config/cors.config.js";
 import { config as configJson } from "./config/json.config.js";
 import { connectDB } from "./config/mongoose.config.js";
@@ -16,13 +17,19 @@ const app = express();
 configCors(app);                              // CORS (usa FRONTEND_HOST/.env)
 app.use(express.json({ limit: "2mb" }));     // Parser JSON explícito
 configJson(app);                              // Tu config JSON
-configStatic(app);                            // Archivos estáticos (/api/public/images)
+configStatic(app);                            // Archivos estáticos (tu config actual)
+
+/* ---------- ⚠️ Exponer /api/public/images como estático ---------- */
+app.use(
+  "/api/public/images",
+  express.static(path.join(process.cwd(), "backend", "public", "images"))
+);
 
 /* ---------- Base de datos ---------- */
 connectDB();
 
 /* ---------- Rutas ---------- */
-app.get("/api/health", (req, res) => res.json({ ok: true })); // <- para test rápido
+app.get("/api/health", (req, res) => res.json({ ok: true })); // <- test rápido
 app.use("/api/institutions", institutionRouter);
 app.use("/api/products", productRouter);
 app.use("/api/inquiry", inquiryRouter);
@@ -54,4 +61,5 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 export default app;
+
 

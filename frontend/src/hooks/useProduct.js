@@ -6,11 +6,10 @@ export const useProduct = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ✅ Filtros controlados por estado
+  // Filtros controlados por estado (name y highlighted)
   const [filters, setFilters] = useState({
     name: "",
     highlighted: undefined, // true | false | undefined
-    limit: 20,
   });
 
   const fetchProducts = async () => {
@@ -20,9 +19,9 @@ export const useProduct = () => {
     try {
       const data = await productsApi.fetchProducts(filters);
       setProducts(data);
-    } catch (error) {
+    } catch (err) {
       setProducts([]);
-      setError(error.message || "Error al cargar productos.");
+      setError(err.message || "Error al cargar productos.");
     }
 
     setIsLoading(false);
@@ -35,8 +34,8 @@ export const useProduct = () => {
 
     try {
       product = await productsApi.fetchProductById(id);
-    } catch (error) {
-      setError(error.message || "Error al cargar producto.");
+    } catch (err) {
+      setError(err.message || "Error al cargar producto.");
     }
 
     setIsLoading(false);
@@ -50,9 +49,9 @@ export const useProduct = () => {
 
     try {
       product = await productsApi.createProduct(values);
-      fetchProducts();
-    } catch (error) {
-      setError(error.message || "Error al crear producto.");
+      await fetchProducts(); // refresca la lista
+    } catch (err) {
+      setError(err.message || "Error al crear producto.");
     }
 
     setIsLoading(false);
@@ -66,9 +65,9 @@ export const useProduct = () => {
 
     try {
       product = await productsApi.updateProduct(id, values);
-      fetchProducts();
-    } catch (error) {
-      setError(error.message || "Error al modificar producto.");
+      await fetchProducts(); // refresca la lista
+    } catch (err) {
+      setError(err.message || "Error al modificar producto.");
     }
 
     setIsLoading(false);
@@ -81,15 +80,15 @@ export const useProduct = () => {
 
     try {
       await productsApi.removeProduct(id);
-      fetchProducts();
-    } catch (error) {
-      setError(error.message || "Error al eliminar producto.");
+      await fetchProducts(); // refresca la lista
+    } catch (err) {
+      setError(err.message || "Error al eliminar producto.");
     }
 
     setIsLoading(false);
   };
 
-  // ✅ Re-fetch cuando cambian filtros
+  // Re-fetch cuando cambian filtros
   useEffect(() => {
     fetchProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -108,3 +107,4 @@ export const useProduct = () => {
     setFilters,
   };
 };
+

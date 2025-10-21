@@ -5,13 +5,17 @@ const mapProduct = (product) => {
   return { id: _id, ...rest };
 };
 
-// ✅ fetchProducts con soporte para búsqueda y destacados
-//    sin enviar "limit" (que tu backend no acepta)
+// pequeña utilidad para detectar File en forma robusta
+const isFile = (v) =>
+  v &&
+  typeof v === "object" &&
+  typeof v.name === "string" &&
+  (v instanceof File || typeof v.size === "number");
+
 const fetchProducts = async (filters = {}) => {
   try {
     let url = `${API_URL}/products`;
 
-    // solo agregamos los filtros que tu backend admite
     const params = new URLSearchParams();
     if (filters.name) params.set("name", filters.name);
     if (typeof filters.highlighted === "boolean") {
@@ -25,7 +29,6 @@ const fetchProducts = async (filters = {}) => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    // soporta array directo o { status:"success", payload:[…] }
     const list = Array.isArray(data)
       ? data
       : data && data.status === "success" && Array.isArray(data.payload)
@@ -57,6 +60,7 @@ const fetchProductById = async (id) => {
   }
 };
 
+// ✅ compat: acepta file en values.thumbnail o values.image
 const createProduct = async (values) => {
   try {
     const formData = new FormData();
@@ -66,8 +70,12 @@ const createProduct = async (values) => {
     formData.append("stock", values.stock);
     formData.append("highlighted", values.highlighted || false);
 
-    if (values.image instanceof File) {
-      formData.append("image", values.image);
+    const file = isFile(values?.thumbnail) ? values.thumbnail
+               : isFile(values?.image) ? values.image
+               : null;
+
+    if (file) {
+      formData.append("thumbnail", file); // el backend espera 'thumbnail'
     }
 
     const response = await fetch(`${API_URL}/products`, {
@@ -88,20 +96,22 @@ const createProduct = async (values) => {
   }
 };
 
+// ✅ compat: acepta file en values.thumbnail o values.image
 const updateProduct = async (id, values) => {
   try {
     const formData = new FormData();
-    if (values.name) formData.append("name", values.name);
-    if (values.description !== undefined)
-      formData.append("description", values.description);
-    if (values.price) formData.append("price", values.price);
-    if (values.stock !== undefined)
-      formData.append("stock", values.stock);
-    if (values.highlighted !== undefined)
-      formData.append("highlighted", values.highlighted);
+    if (values.name !== undefined) formData.append("name", values.name);
+    if (values.description !== undefined) formData.append("description", values.description);
+    if (values.price !== undefined) formData.append("price", values.price);
+    if (values.stock !== undefined) formData.append("stock", values.stock);
+    if (values.highlighted !== undefined) formData.append("highlighted", values.highlighted);
 
-    if (values.image instanceof File) {
-      formData.append("image", values.image);
+    const file = isFile(values?.thumbnail) ? values.thumbnail
+               : isFile(values?.image) ? values.image
+               : null;
+
+    if (file) {
+      formData.append("thumbnail", file);
     }
 
     const response = await fetch(`${API_URL}/products/${id}`, {
@@ -131,7 +141,7 @@ const removeProduct = async (id) => {
     const data = await response.json();
 
     if (data.status === "success") {
-      return mapProduct(data.payload);
+      return data.payload ? mapProduct(data.payload) : { id, _id: id };
     }
 
     throw new Error(data.message || "Error al eliminar producto");
@@ -141,17 +151,21 @@ const removeProduct = async (id) => {
   }
 };
 
-// ✅ Corregido: sin "limit", usa correctamente el parámetro "highlighted"
 const fetchHighlightedProducts = async () => {
   try {
     const response = await fetch(`${API_URL}/products?highlighted=true`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    if (data.status === "success") {
-      return data.payload.map(mapProduct);
-    }
+    const list = Array.isArray(data)
+      ? data
+      : data && data.status === "success" && Array.isArray(data.payload)
+      ? data.payload
+      : null;
 
-    throw new Error(data.message || "Error al obtener productos destacados");
+    if (list) return list.map(mapProduct);
+
+    throw new Error((data && data.message) || "Error al obtener productos destacados");
   } catch (error) {
     console.error("Error fetching highlighted products:", error);
     throw error;
@@ -166,3 +180,5 @@ export default {
   removeProduct,
   fetchHighlightedProducts,
 };
+
+
