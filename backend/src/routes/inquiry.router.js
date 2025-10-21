@@ -1,8 +1,14 @@
 import { Router } from "express";
-import inquiryController from "../controllers/inquiry.controller.js";
+import InquiryController from "../controllers/inquiry.controller.js";
 
 const router = Router();
+const controller = new InquiryController();
 
-router.post("/send-mail", inquiryController.sendMail.bind(inquiryController));
+router.post("/", controller.create.bind(controller));
+router.post("/send-mail", controller.create.bind(controller));
+
+router.get("/smtp-verify", controller.verify.bind(controller));
 
 export default router;
+
+
