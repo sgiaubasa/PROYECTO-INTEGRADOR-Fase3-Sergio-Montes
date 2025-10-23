@@ -1,17 +1,25 @@
 import productsApi from "@/api/products.api.js";
+import { ButtonPrimary } from "@/components/buttons";
 import { API_URL_IMAGES } from "@/constants/api.constant.js";
 import AppContext from "@/contexts/AppContext";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import { useContext, useEffect, useMemo, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import "./product-detail.scss";
 
 const currency = (n) =>
-  new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(n ?? 0);
+  new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    maximumFractionDigits: 0,
+  }).format(n ?? 0);
 
 export default function ProductDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
+
   const { shoppingCartContext } = useContext(AppContext);
-  const { addItem } = shoppingCartContext || { addItem: () => {} };
+  const { addArticle } = shoppingCartContext; // 👈 la misma que usás en ProductItem
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +31,6 @@ export default function ProductDetail() {
     (async () => {
       try {
         setLoading(true);
-        setError(null);
         const data = await productsApi.fetchProductById(id);
         if (alive) setProduct(data);
       } catch (e) {
@@ -32,22 +39,45 @@ export default function ProductDetail() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   const imgSrc = useMemo(() => {
     if (!product?.thumbnail) return null;
+    if (String(product.thumbnail).startsWith("/")) return product.thumbnail;
     return `${API_URL_IMAGES}/products/${product.thumbnail}`;
   }, [product]);
 
-  const handleAdd = () => {
-    if (!product) return;
-    const quantity = Math.min(Math.max(Number(qty) || 1, 1), product.stock || 99);
-    addItem({ ...product, qty: quantity });
+  const clampQty = (val, max) => {
+    const n = Number(val);
+    const safe = Number.isFinite(n) ? n : 1;
+    return Math.min(Math.max(safe, 1), Math.max(max, 0));
+  };
+
+  const onQtyChange = (e) => {
+    setQty((prev) => clampQty(e.target.value, product?.stock ?? 0));
+  };
+
+  const handleAddToCartAndBack = () => {
+    if (!product || !addArticle) return;
+    const quantity = clampQty(qty, product.stock ?? 0);
+    if (quantity <= 0) return;
+
+    // ✅ agrega al carrito con tu misma función del contexto
+    addArticle(product.id, quantity);
+
+    // ✅ vuelve a la página de productos
+    navigate("/products");
   };
 
   if (loading) {
-    return <section className="product-detail"><p>Cargando producto…</p></section>;
+    return (
+      <section className="product-detail">
+        <p>Cargando producto…</p>
+      </section>
+    );
   }
 
   if (error) {
@@ -68,6 +98,9 @@ export default function ProductDetail() {
     );
   }
 
+  const noStock = (product.stock ?? 0) <= 0;
+  const invalidQty = qty < 1 || qty > (product.stock ?? 0);
+
   return (
     <section className="product-detail">
       <div className="product-detail__image">
@@ -75,7 +108,9 @@ export default function ProductDetail() {
           <img
             src={imgSrc}
             alt={product.name}
-            onError={(e) => { e.currentTarget.src = `${API_URL_IMAGES}/products/fallback.jpg`; }}
+            onError={(e) => {
+              e.currentTarget.src = `${API_URL_IMAGES}/products/fallback.jpg`;
+            }}
           />
         ) : (
           <div className="product-detail__image--placeholder">Sin imagen</div>
@@ -86,7 +121,7 @@ export default function ProductDetail() {
         <h1 className="product-detail__title">{product.name}</h1>
         <p className="product-detail__price">{currency(product.price)}</p>
         <p className="product-detail__stock">
-          {product.stock > 0 ? `Stock: ${product.stock}` : "Sin stock"}
+          {noStock ? "Sin stock" : `Stock: ${product.stock}`}
         </p>
         <p className="product-detail__desc">{product.description}</p>
 
@@ -98,23 +133,29 @@ export default function ProductDetail() {
               min={1}
               max={product.stock || 99}
               value={qty}
-              onChange={(e) => setQty(e.target.value)}
+              onChange={onQtyChange}
             />
           </label>
-          <button
+
+          <ButtonPrimary
             className="product-detail__add"
-            disabled={product.stock <= 0}
-            onClick={handleAdd}
+            onClick={handleAddToCartAndBack}
+            disabled={noStock || invalidQty}
           >
-            Agregar al carrito
-          </button>
+            <AddShoppingCartIcon />
+            &nbsp;Agregar al carrito
+          </ButtonPrimary>
         </div>
 
-        <Link to="/products" className="product-detail__back">← Volver al catálogo</Link>
+        <Link to="/products" className="product-detail__back">
+          ← Volver al catálogo
+        </Link>
       </div>
     </section>
   );
 }
+
+
 
 
 
