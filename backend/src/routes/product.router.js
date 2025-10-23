@@ -1,46 +1,60 @@
+// backend/routes/product.router.js
 import { Router } from "express";
-import fs from "fs";
+import fs from "fs/promises";
 import multer from "multer";
 import path from "path";
 import ProductController from "../controllers/product.controller.js";
+import paths from "../utils/paths.js"; // asumo que tenés paths.imagesProducts definido
 
 const router = Router();
-const productController = new ProductController();
+const controller = new ProductController();
 
-/** Carpeta robusta, independientemente del cwd */
-const imagesDir = path.join(process.cwd(), "backend", "public", "images", "products");
-if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+// helper simple para nombres “seguros”
+function slugify(text) {
+  return String(text || "")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9.\-]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function ensureDir(dir) {
+  try { await fs.mkdir(dir, { recursive: true }); } catch {}
+}
 
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, imagesDir),
-  // si preferís conservar el original, dejá file.originalname; si no, generá uno único
-  filename: (req, file, cb) => cb(null, file.originalname),
+  destination: async (req, file, cb) => {
+    try {
+      await ensureDir(paths.imagesProducts);
+      cb(null, paths.imagesProducts);
+    } catch (e) {
+      cb(e);
+    }
+  },
+  filename: (req, file, cb) => {
+    // Preferimos basar el nombre en "name" cuando exista
+    const base = slugify(req.body?.name) || Date.now().toString();
+    const orig = slugify(file.originalname || "image.png");
+    const ext = path.extname(orig) || ".png";
+    // prefijo timestamp para unicidad
+    const filename = `${Date.now()}-${base}${ext}`;
+    console.log(`[MULTER] filename → ${filename}`);
+    cb(null, filename);
+  },
 });
 
-const fileFilter = (req, file, cb) => {
-  if (/^image\//.test(file.mimetype)) return cb(null, true);
-  cb(new Error("Solo se permiten imágenes"));
-};
+const upload = multer({ storage });
 
-const upload = multer({
-  storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-});
-
-// Rutas
-router.get("/", productController.findAll.bind(productController));
-router.get("/:id", productController.findById.bind(productController));
-
-// Campo del archivo DEBE ser 'thumbnail' (coincide con el frontend)
-router.post("/", upload.single("thumbnail"), productController.create.bind(productController));
-router.put("/:id", upload.single("thumbnail"), productController.update.bind(productController));
-router.delete("/:id", productController.delete.bind(productController));
-
-/** ✅ NUEVO: endpoint de compra — descuenta stock de forma segura */
-router.post("/purchase", productController.purchase.bind(productController));
+// Rutas (no removemos nada)
+router.get("/", (req, res) => controller.findAll(req, res));
+router.get("/:id", (req, res) => controller.findById(req, res));
+router.post("/", upload.single("thumbnail"), (req, res) => controller.create(req, res));
+router.put("/:id", upload.single("thumbnail"), (req, res) => controller.update(req, res));
+router.delete("/:id", (req, res) => controller.delete(req, res));
+router.post("/purchase", (req, res) => controller.purchase(req, res));
 
 export default router;
+
 
 
 

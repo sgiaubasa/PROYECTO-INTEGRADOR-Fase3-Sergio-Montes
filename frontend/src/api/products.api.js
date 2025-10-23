@@ -1,4 +1,3 @@
-// frontend/src/api/products.api.js
 import { API_URL } from "@/constants/api.constant.js";
 
 /* ---------------- Helpers / Utils ---------------- */
@@ -39,6 +38,15 @@ const buildQuery = (filters = {}) => {
 };
 
 const cleanStr = (v) => (v == null ? "" : String(v).trim());
+
+/** 🔹 NUEVO: limpia y limita longitud (reemplaza saltos de línea por espacio, colapsa espacios) */
+const cleanStrLimited = (v, max = 100) => {
+  const s = cleanStr(v)
+    .replace(/\r?\n+/g, " ")   // \n -> espacio
+    .replace(/\s\s+/g, " ");   // múltiples espacios -> uno
+  return s.length > max ? s.slice(0, max) : s;
+};
+
 const toNumOrEmpty = (v) => {
   if (v === null || v === undefined || v === "") return "";
   const n = Number(v);
@@ -87,7 +95,8 @@ const createProduct = async (values) => {
     const formData = new FormData();
     const payloadLog = {
       name: cleanStr(values?.name),
-      description: cleanStr(values?.description),
+      // 🔸 Limitar a 100 caracteres según tu backend
+      description: cleanStrLimited(values?.description, 100),
       price: toNumOrEmpty(values?.price),
       stock: toNumOrEmpty(values?.stock),
       highlighted: toBoolStr(values?.highlighted),
@@ -112,7 +121,7 @@ const createProduct = async (values) => {
 
     const response = await fetch(`${API_URL}/products`, {
       method: "POST",
-      body: formData, // no agregar headers
+      body: formData,
     });
 
     const txt = await response.text();
@@ -141,11 +150,22 @@ const updateProduct = async (id, values) => {
   try {
     const formData = new FormData();
 
-    if (values.name !== undefined) formData.append("name", cleanStr(values.name));
-    if (values.description !== undefined) formData.append("description", cleanStr(values.description));
-    if (values.price !== undefined) formData.append("price", toNumOrEmpty(values.price));
-    if (values.stock !== undefined) formData.append("stock", toNumOrEmpty(values.stock));
-    if (values.highlighted !== undefined) formData.append("highlighted", toBoolStr(values.highlighted));
+    if (values.name !== undefined) {
+      formData.append("name", cleanStr(values.name));
+    }
+    if (values.description !== undefined) {
+      // 🔸 Limitar a 100 caracteres también en update
+      formData.append("description", cleanStrLimited(values.description, 100));
+    }
+    if (values.price !== undefined) {
+      formData.append("price", toNumOrEmpty(values.price));
+    }
+    if (values.stock !== undefined) {
+      formData.append("stock", toNumOrEmpty(values.stock));
+    }
+    if (values.highlighted !== undefined) {
+      formData.append("highlighted", toBoolStr(values.highlighted));
+    }
 
     const file =
       isFile(values?.thumbnail) ? values.thumbnail :
@@ -257,6 +277,7 @@ export default {
   fetchHighlightedProducts,
   purchaseProducts,
 };
+
 
 
 

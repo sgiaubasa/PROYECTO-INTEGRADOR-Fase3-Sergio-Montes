@@ -9,18 +9,22 @@ const Products = () => {
   const { filters, setFilters, isLoading } = productsContext;
 
   return (
-    <div className="products">
+    <section className="products-page">
       <Text variant="h2">Productos</Text>
 
       {/* Filtros de búsqueda */}
-      <div className="filters" style={{ display: "flex", gap: "12px", margin: "12px 0" }}>
-        <input
-          type="text"
-          placeholder="Buscar por nombre…"
-          value={filters.name}
-          onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value }))}
-        />
-        <label style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+      <div className="products-page__filters">
+        <div className="filters__group">
+          <input
+            type="text"
+            className="filters__search"
+            placeholder="Buscar por nombre…"
+            value={filters.name ?? ""}
+            onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value }))}
+          />
+        </div>
+
+        <label className="filters__check">
           <input
             type="checkbox"
             checked={filters.highlighted === true}
@@ -28,14 +32,16 @@ const Products = () => {
               setFilters((f) => ({ ...f, highlighted: e.target.checked ? true : undefined }))
             }
           />
-          Solo destacados
+          <span>Solo destacados</span>
         </label>
-        {isLoading && <span>Cargando…</span>}
+
+        {isLoading && <span className="filters__loading">Cargando…</span>}
       </div>
 
       <ProductGallery />
-    </div>
+    </section>
   );
 };
 
 export default Products;
+
