@@ -1,93 +1,131 @@
 @use "@/scss/variables" as var;
 
 .product-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 460px;
+    /* altura consistente */
+    border-radius: 16px;
     overflow: hidden;
+    background: var.$color-neutro-100;
+    box-shadow: 0 4px 8px var.$color-dark-alpha-100;
+    transition: transform .2s ease, box-shadow .2s ease;
 
-    &__image {
-        object-fit: cover;
-        height: auto;
-        width: 100%;
-        aspect-ratio: 16/9;
-
-        &--skeleton {
-            height: auto;
-            width: 100%;
-            aspect-ratio: 16/9;
-            border-radius: 0 !important;
-            margin-bottom: var.$spacing-sm;
-        }
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px var.$color-dark-alpha-300;
     }
 
+    /* Imagen uniforme */
+    &__image {
+        width: 100%;
+        height: 190px;
+        /* mismo alto para todas */
+        object-fit: cover;
+        cursor: pointer;
+        display: block;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    /* Contenido textual */
     &__content {
+        flex: 1 1 auto;
+        /* ocupa el espacio disponible */
+        padding: var.$spacing-md;
         display: flex;
         flex-direction: column;
-        align-items: flex-start;
-        gap: var.$spacing-sm;
-        padding: 0 var.$spacing-md;
+        gap: var.$spacing-xs;
+        min-height: 0;
+        /* evita overflow con clamp */
     }
 
-    &__title {
+    &__name {
         font-size: var.$font-size-lg;
         font-weight: var.$font-weight-bold;
+        color: var.$color-ak-primary-800;
+        margin: 0;
 
-        &--skeleton {
-            height: 35px;
-            width: 65%;
-        }
+        /* máximo 2 líneas */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
     }
 
     &__description {
         font-size: var.$font-size-sm;
-        font-weight: var.$font-weight-regular;
-        text-align: justify;
-
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        -webkit-line-clamp: 2;
-        line-clamp: 2;
-        text-overflow: ellipsis;
+        color: var.$color-neutro-600;
+        margin: 0;
+        /* puede crecer pero no empuja precio */
         overflow: hidden;
-
-        &--skeleton {
-            height: 42px;
-            width: 100%;
-        }
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        /* ajustá a 2–3 si querés */
+        -webkit-box-orient: vertical;
     }
 
+    /* 🔽 SIEMPRE en el mismo lugar dentro del contenido */
     &__price {
-        font-size: var.$font-size-sm;
+        margin-top: auto;
+        /* empuja el precio al final del content */
+        font-size: var.$font-size-md;
         font-weight: var.$font-weight-bold;
-        align-self: flex-end;
-
-        &--skeleton {
-            height: 14px;
-            width: 50px;
-            align-self: flex-end;
-        }
+        color: var.$color-success-700;
+        text-align: right;
     }
 
+    /* 🔽 SIEMPRE al fondo de la card */
     &__actions {
+        margin-top: auto;
+        /* asegura que quede pegado abajo */
         display: flex;
         justify-content: center;
-        gap: var.$spacing-md;
-        padding: var.$spacing-md;
+        gap: var.$spacing-sm;
+        padding: var.$spacing-sm var.$spacing-md var.$spacing-md;
+        border-top: 1px solid var.$color-neutro-300;
 
-        &--skeleton {
-            width: 50px;
-            height: 24px;
-            line-height: 1.2;
+        /* estilo para tus ButtonPrimary */
+        .product-item__add,
+        .product-item__remove {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            /* si ButtonPrimary ya define color, esto no pisa; si querés forzar: */
+            /* background-color: var.$color-ak-primary-500; color: #fff; */
+        }
+
+        .product-item__add {
+            color: var.$color-confirm-500;
+        }
+
+        .product-item__remove {
+            color: var.$color-warning-600;
         }
     }
 
-    &__add {
-        svg {
-            font-size: var.$font-size-lg !important;
-        }
+    /* Mensaje SIN STOCK si lo devolvés desde renderActions */
+    &__nostock,
+    &__actions>p,
+    &__actions>span {
+        color: var.$color-danger-700;
+        font-weight: var.$font-weight-bold;
+        margin: 0;
+        text-align: center;
     }
 
-    &__remove {
-        svg {
-            font-size: var.$font-size-lg !important;
-        }
+    &__image--skeleton,
+    &__name--skeleton,
+    &__description--skeleton,
+    &__price--skeleton,
+    &__actions--skeleton {
+        border-radius: 12px;
     }
 }

@@ -1,4 +1,3 @@
-import { Text } from "@/components/texts";
 import { API_URL_IMAGES } from "@/constants/api.constant.js";
 import AppContext from "@/contexts/AppContext";
 import PropTypes from "prop-types";
@@ -17,7 +16,6 @@ const InstitutionLogo = (props) => {
             {institution.logo && institution.name && (
                 <>
                     <img className="institution-logo__logo" src={`${API_URL_IMAGES}/${institution.logo}`} alt="Logo de la institución"/>
-                    <Text className="institution-logo__title" variant="h1">{institution.name}</Text>
                 </>
             )}
         </div>

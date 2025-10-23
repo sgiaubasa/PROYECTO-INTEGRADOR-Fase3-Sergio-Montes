@@ -6,7 +6,7 @@ import Institution from "./institution/Institution";
 const Contact = () => {
     return (
         <div className="contact">
-            <Text variant="h2">Datos de contacto</Text>
+            <Text variant="h2">Contacto</Text>
             <div className="contact__content">
                 <div className="contact__institution">
                     <Institution />

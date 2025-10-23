@@ -1,40 +1,61 @@
+// frontend/src/api/products.api.js
 import { API_URL } from "@/constants/api.constant.js";
 
+/* ---------------- Helpers / Utils ---------------- */
+
 const mapProduct = (product) => {
+  if (!product) return product;
   const { _id, ...rest } = product;
-  return { id: _id, ...rest };
+  return { id: _id ?? product.id, ...rest };
 };
 
-// pequeña utilidad para detectar File en forma robusta
-const isFile = (v) =>
-  v &&
-  typeof v === "object" &&
-  typeof v.name === "string" &&
-  (v instanceof File || typeof v.size === "number");
+const isFile = (v) => {
+  if (!v || typeof v !== "object") return false;
+  const looksLikeFile = typeof v.name === "string" && typeof v.size === "number";
+  const isInstanceOfFile = typeof File !== "undefined" && v instanceof File;
+  return isInstanceOfFile || looksLikeFile;
+};
+
+const normalizeList = (data) => {
+  if (Array.isArray(data)) return data;
+  if (data && data.status === "success" && Array.isArray(data.payload)) return data.payload;
+  return null;
+};
+
+const normalizeItem = (data) => {
+  if (data && data.status === "success" && data.payload) return data.payload;
+  if (data && !data.status) return data;
+  return null;
+};
+
+const buildQuery = (filters = {}) => {
+  const params = new URLSearchParams();
+  if (filters.name) params.set("name", filters.name);
+  if (typeof filters.highlighted === "boolean") {
+    params.set("highlighted", String(filters.highlighted));
+  }
+  const qs = params.toString();
+  return qs ? `?${qs}` : "";
+};
+
+const cleanStr = (v) => (v == null ? "" : String(v).trim());
+const toNumOrEmpty = (v) => {
+  if (v === null || v === undefined || v === "") return "";
+  const n = Number(v);
+  return Number.isFinite(n) ? String(n) : "";
+};
+const toBoolStr = (v) => (v === true || v === "true" ? "true" : "false");
+
+/* ---------------- API Calls ---------------- */
 
 const fetchProducts = async (filters = {}) => {
   try {
-    let url = `${API_URL}/products`;
-
-    const params = new URLSearchParams();
-    if (filters.name) params.set("name", filters.name);
-    if (typeof filters.highlighted === "boolean") {
-      params.set("highlighted", String(filters.highlighted));
-    }
-
-    const qs = params.toString();
-    if (qs) url += `?${qs}`;
-
+    const url = `${API_URL}/products${buildQuery(filters)}`;
     const response = await fetch(url);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    const list = Array.isArray(data)
-      ? data
-      : data && data.status === "success" && Array.isArray(data.payload)
-      ? data.payload
-      : null;
-
+    const list = normalizeList(data);
     if (list) return list.map(mapProduct);
 
     throw new Error((data && data.message) || "Error al obtener productos");
@@ -47,13 +68,13 @@ const fetchProducts = async (filters = {}) => {
 const fetchProductById = async (id) => {
   try {
     const response = await fetch(`${API_URL}/products/${id}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    if (data.status === "success") {
-      return mapProduct(data.payload);
-    }
+    const item = normalizeItem(data);
+    if (item) return mapProduct(item);
 
-    throw new Error(data.message || "Producto no encontrado");
+    throw new Error((data && data.message) || "Producto no encontrado");
   } catch (error) {
     console.error("Error fetching product by id:", error);
     throw error;
@@ -64,32 +85,51 @@ const fetchProductById = async (id) => {
 const createProduct = async (values) => {
   try {
     const formData = new FormData();
-    formData.append("name", values.name);
-    formData.append("description", values.description);
-    formData.append("price", values.price);
-    formData.append("stock", values.stock);
-    formData.append("highlighted", values.highlighted || false);
+    const payloadLog = {
+      name: cleanStr(values?.name),
+      description: cleanStr(values?.description),
+      price: toNumOrEmpty(values?.price),
+      stock: toNumOrEmpty(values?.stock),
+      highlighted: toBoolStr(values?.highlighted),
+    };
 
-    const file = isFile(values?.thumbnail) ? values.thumbnail
-               : isFile(values?.image) ? values.image
-               : null;
+    formData.append("name", payloadLog.name);
+    formData.append("description", payloadLog.description);
+    formData.append("price", payloadLog.price);
+    formData.append("stock", payloadLog.stock);
+    formData.append("highlighted", payloadLog.highlighted);
 
-    if (file) {
-      formData.append("thumbnail", file); // el backend espera 'thumbnail'
-    }
+    const file =
+      isFile(values?.thumbnail) ? values.thumbnail :
+      isFile(values?.image) ? values.image :
+      null;
+
+    if (file) formData.append("thumbnail", file);
+
+    console.log("[API createProduct] URL:", `${API_URL}/products`);
+    console.log("[API createProduct] payload (sin file):", payloadLog);
+    console.log("[API createProduct] file?:", !!file, file?.name);
 
     const response = await fetch(`${API_URL}/products`, {
       method: "POST",
-      body: formData,
+      body: formData, // no agregar headers
     });
 
-    const data = await response.json();
+    const txt = await response.text();
+    let data = null;
+    try { data = txt ? JSON.parse(txt) : null; } catch { data = null; }
 
-    if (data.status === "success") {
-      return mapProduct(data.payload);
+    console.log("[API createProduct] status:", response.status);
+    console.log("[API createProduct] raw response:", txt);
+
+    if (!response.ok) {
+      throw new Error(data?.message || `HTTP ${response.status} ${txt || ""}`);
     }
 
-    throw new Error(data.message || "Error al crear producto");
+    const item = normalizeItem(data);
+    if (item) return mapProduct(item);
+    if (data && !data.status) return mapProduct(data);
+    return null;
   } catch (error) {
     console.error("Error creating product:", error);
     throw error;
@@ -100,32 +140,43 @@ const createProduct = async (values) => {
 const updateProduct = async (id, values) => {
   try {
     const formData = new FormData();
-    if (values.name !== undefined) formData.append("name", values.name);
-    if (values.description !== undefined) formData.append("description", values.description);
-    if (values.price !== undefined) formData.append("price", values.price);
-    if (values.stock !== undefined) formData.append("stock", values.stock);
-    if (values.highlighted !== undefined) formData.append("highlighted", values.highlighted);
 
-    const file = isFile(values?.thumbnail) ? values.thumbnail
-               : isFile(values?.image) ? values.image
-               : null;
+    if (values.name !== undefined) formData.append("name", cleanStr(values.name));
+    if (values.description !== undefined) formData.append("description", cleanStr(values.description));
+    if (values.price !== undefined) formData.append("price", toNumOrEmpty(values.price));
+    if (values.stock !== undefined) formData.append("stock", toNumOrEmpty(values.stock));
+    if (values.highlighted !== undefined) formData.append("highlighted", toBoolStr(values.highlighted));
 
-    if (file) {
-      formData.append("thumbnail", file);
-    }
+    const file =
+      isFile(values?.thumbnail) ? values.thumbnail :
+      isFile(values?.image) ? values.image :
+      null;
+
+    if (file) formData.append("thumbnail", file);
+
+    console.log("[API updateProduct] URL:", `${API_URL}/products/${id}`);
+    console.log("[API updateProduct] fields set:", Object.fromEntries(formData.entries()));
 
     const response = await fetch(`${API_URL}/products/${id}`, {
       method: "PUT",
       body: formData,
     });
 
-    const data = await response.json();
+    const txt = await response.text();
+    let data = null;
+    try { data = txt ? JSON.parse(txt) : null; } catch { data = null; }
 
-    if (data.status === "success") {
-      return mapProduct(data.payload);
+    console.log("[API updateProduct] status:", response.status);
+    console.log("[API updateProduct] raw response:", txt);
+
+    if (!response.ok) {
+      throw new Error(data?.message || `HTTP ${response.status} ${txt || ""}`);
     }
 
-    throw new Error(data.message || "Error al actualizar producto");
+    const item = normalizeItem(data);
+    if (item) return mapProduct(item);
+    if (data && !data.status) return mapProduct(data);
+    return null;
   } catch (error) {
     console.error("Error updating product:", error);
     throw error;
@@ -138,11 +189,18 @@ const removeProduct = async (id) => {
       method: "DELETE",
     });
 
-    const data = await response.json();
+    if (!response.ok) {
+      const txt = await response.text();
+      throw new Error(`HTTP ${response.status} ${txt || ""}`);
+    }
 
-    if (data.status === "success") {
+    const data = await response.json().catch(() => null);
+
+    if (data && data.status === "success") {
       return data.payload ? mapProduct(data.payload) : { id, _id: id };
     }
+
+    if (!data) return { id, _id: id }; // 204 No Content
 
     throw new Error(data.message || "Error al eliminar producto");
   } catch (error) {
@@ -157,12 +215,7 @@ const fetchHighlightedProducts = async () => {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
 
-    const list = Array.isArray(data)
-      ? data
-      : data && data.status === "success" && Array.isArray(data.payload)
-      ? data.payload
-      : null;
-
+    const list = normalizeList(data);
     if (list) return list.map(mapProduct);
 
     throw new Error((data && data.message) || "Error al obtener productos destacados");
@@ -172,16 +225,14 @@ const fetchHighlightedProducts = async () => {
   }
 };
 
-/** ✅ NUEVO: compra — descuenta stock en el backend */
 const purchaseProducts = async (items) => {
-  // items: [{ id, qty }]
   try {
     const res = await fetch(`${API_URL}/products/purchase`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ items }),
     });
-    const data = await res.json();
+    const data = await res.json().catch(() => ({}));
 
     if (res.ok && data.status === "success") return data;
 
@@ -190,7 +241,7 @@ const purchaseProducts = async (items) => {
       error.payload = data.payload;
       throw error;
     }
-    throw new Error(data.message || "Error al procesar la compra");
+    throw new Error(data.message || `Error al procesar la compra (HTTP ${res.status})`);
   } catch (error) {
     console.error("purchaseProducts error:", error);
     throw error;
@@ -204,7 +255,10 @@ export default {
   updateProduct,
   removeProduct,
   fetchHighlightedProducts,
-  purchaseProducts, // 👈 nuevo
+  purchaseProducts,
 };
+
+
+
 
 
