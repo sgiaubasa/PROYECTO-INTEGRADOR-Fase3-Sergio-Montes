@@ -3,15 +3,23 @@ import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-    plugins: [react()],
-    resolve: {
-        alias: {
-            "@": path.resolve(__dirname, "./src"),
-        },
-        dedupe: [ "@emotion/react", "@emotion/styled" ], // Resuelve conflicto de paquetes de emotion
+  plugins: [react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
     },
-    build: {
-        outDir: "dist",
-        emptyOutDir: true,
+    dedupe: ["@emotion/react", "@emotion/styled"], // Resuelve conflicto de paquetes de emotion
+  },
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000", // ⬅️ Backend de Express
+        changeOrigin: true,
+      },
     },
+  },
+  build: {
+    outDir: "dist",
+    emptyOutDir: true,
+  },
 });
