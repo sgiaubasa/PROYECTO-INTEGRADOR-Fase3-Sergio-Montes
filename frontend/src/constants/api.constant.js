@@ -2,10 +2,10 @@
 
 // Detecta entorno (local vs producción)
 const getApiBase = () => {
-  if (import.meta.env.DEV) {
-    return "http://localhost:3000/api"; // backend local
-  }
-  return "/api"; // producción (Vercel, etc.)
+    if (import.meta.env.DEV) {
+        return "http://localhost:3000/api"; // backend local
+    }
+    return "/api"; // producción (Vercel, etc.)
 };
 
 // URL base de la API
@@ -16,4 +16,3 @@ export const API_URL = API;
 
 // Ruta base para imágenes
 export const API_URL_IMAGES = `${API}/public/images`;
-

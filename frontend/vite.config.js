@@ -1,4 +1,4 @@
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react"; // 👈 reemplaza swc por babel
 import path from "path";
 import { defineConfig } from "vite";
 
@@ -8,12 +8,12 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-    dedupe: ["@emotion/react", "@emotion/styled"], // Resuelve conflicto de paquetes de emotion
+    dedupe: ["@emotion/react", "@emotion/styled"], // evita conflictos de emotion
   },
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000", // ⬅️ Backend de Express
+        target: "http://localhost:3000", // backend express
         changeOrigin: true,
       },
     },

@@ -9,8 +9,8 @@ const ShoppingCart = () => {
     const { shoppingCart, addArticle, subtractArticle, removeArticle, clear } = shoppingCartContext;
     const { purchase } = productsContext;
 
-    const [error, setError] = useState("");
-    const [ok, setOk] = useState("");
+    const [ error, setError ] = useState("");
+    const [ ok, setOk ] = useState("");
 
     const onInc = (id, item) => {
         // bloquear si ya está al tope del stock
@@ -28,7 +28,7 @@ const ShoppingCart = () => {
 
     const onCheckout = async () => {
         setError(""); setOk("");
-        const items = (shoppingCart.articles || []).map(a => ({ id: a.id, qty: a.quantity }));
+        const items = (shoppingCart.articles || []).map((a) => ({ id: a.id, qty: a.quantity }));
 
         if (items.length === 0) return;
 
@@ -40,12 +40,12 @@ const ShoppingCart = () => {
             if (e?.payload) {
                 // payload: estado actual de stock en DB
                 const faltantes = e.payload
-                  .filter(p => {
-                    const inCart = (shoppingCart.articles || []).find(i => i.id === String(p._id) || i.id === p._id);
-                    return inCart && inCart.quantity > p.stock;
-                  })
-                  .map(p => `${p.name} (stock: ${p.stock})`)
-                  .join(", ");
+                    .filter((p) => {
+                        const inCart = (shoppingCart.articles || []).find((i) => i.id === String(p._id) || i.id === p._id);
+                        return inCart && inCart.quantity > p.stock;
+                    })
+                    .map((p) => `${p.name} (stock: ${p.stock})`)
+                    .join(", ");
                 setError(`Stock insuficiente: ${faltantes}`);
             } else {
                 setError(e.message || "No se pudo procesar la compra.");
@@ -79,9 +79,8 @@ const ShoppingCart = () => {
                                 <button onClick={() => onDec(article.id)}>-</button>
                                 <span style={{ padding: "0 8px" }}>{article.quantity}</span>
                                 <button
-                                  onClick={() => onInc(article.id, article)}
-                                  disabled={article.quantity >= (article.stock ?? 0)}
-                                >+</button>
+                                    onClick={() => onInc(article.id, article)}
+                                    disabled={article.quantity >= (article.stock ?? 0)}>+</button>
                             </TableCell>
 
                             <TableCell align="right">${Number(article.price).toFixed(2)}</TableCell>

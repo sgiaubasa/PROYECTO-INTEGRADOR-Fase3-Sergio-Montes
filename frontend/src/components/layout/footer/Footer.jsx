@@ -5,18 +5,18 @@ import FooterSocialMedia from "./footer-social-media/FooterSocialMedia";
 import "./footer.scss";
 
 const Footer = () => {
-  return (
-    <footer className="footer">
-      <div className="footer_content">
-        <FooterExplorer />
-        <FooterLegal />
-        <FooterSocialMedia />
-      </div>
-      <Text className="footer_copyright" variant="p">
+    return (
+        <footer className="footer">
+            <div className="footer_content">
+                <FooterExplorer />
+                <FooterLegal />
+                <FooterSocialMedia />
+            </div>
+            <Text className="footer_copyright" variant="p">
         &copy; 2025 Todos los derechos reservados
-      </Text>
-    </footer>
-  );
+            </Text>
+        </footer>
+    );
 };
 
 export default Footer;

@@ -10,5 +10,3 @@ router.post("/send-mail", controller.create.bind(controller));
 router.get("/smtp-verify", controller.verify.bind(controller));
 
 export default router;
-
-

@@ -9,7 +9,7 @@ export const useShoppingCart = () => {
 
     const createShoppingCartSchema = (articles = []) => {
         // limpiar posibles items con cantidad 0
-        const clean = (articles || []).filter(a => (a?.quantity ?? 0) > 0);
+        const clean = (articles || []).filter((a) => (a?.quantity ?? 0) > 0);
         return {
             articles: clean,
             totalQuantity: clean.reduce((acc, item) => acc + item.quantity, 0),
@@ -88,7 +88,7 @@ export const useShoppingCart = () => {
 
     /** ✅ NUEVOS helpers */
     const removeArticle = (idProduct) => {
-        const articles = (shoppingCart.articles || []).filter(a => a.id !== idProduct);
+        const articles = (shoppingCart.articles || []).filter((a) => a.id !== idProduct);
         const data = createShoppingCartSchema(articles);
         localStorage.setItem(KEY_SHOPPING_CART, JSON.stringify(data));
         setShoppingCart(data);
@@ -109,6 +109,6 @@ export const useShoppingCart = () => {
         addArticle,
         subtractArticle,
         removeArticle, // 👈 nuevo
-        clear,         // 👈 nuevo
+        clear, // 👈 nuevo
     };
 };

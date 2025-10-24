@@ -7,33 +7,32 @@ import "./header.scss";
 import InstitutionLogo from "./institution-logo/InstitutionLogo";
 
 const Header = () => {
-  const { shoppingCartContext } = useContext(AppContext);
-  const { shoppingCart } = shoppingCartContext;
-  const navigate = useNavigate();
+    const { shoppingCartContext } = useContext(AppContext);
+    const { shoppingCart } = shoppingCartContext;
+    const navigate = useNavigate();
 
-  const handleShoppingCart = () => {
-    navigate("/shopping-cart");
-  };
+    const handleShoppingCart = () => {
+        navigate("/shopping-cart");
+    };
 
-  return (
-    <header className="header">
-      {/* 🟢 Logo izquierda */}
-      <div className="header_institution">
-        <InstitutionLogo />
-      </div>
+    return (
+        <header className="header">
+            {/* 🟢 Logo izquierda */}
+            <div className="header_institution">
+                <InstitutionLogo />
+            </div>
 
-      {/* 🟢 Texto centrado */}
-      <h1 className="header_title-center">AF Revestimiento</h1>
+            {/* 🟢 Texto centrado */}
+            <h1 className="header_title-center">AF Revestimiento</h1>
 
-      {/* 🟢 Carrito derecha */}
-      <IconButtonBadge
-        className="header_shopping-cart"
-        badgeContent={shoppingCart.totalQuantity ?? 0}
-      >
-        <ShoppingCartIcon onClick={handleShoppingCart} />
-      </IconButtonBadge>
-    </header>
-  );
+            {/* 🟢 Carrito derecha */}
+            <IconButtonBadge
+                className="header_shopping-cart"
+                badgeContent={shoppingCart.totalQuantity ?? 0}>
+                <ShoppingCartIcon onClick={handleShoppingCart} />
+            </IconButtonBadge>
+        </header>
+    );
 };
 
 export default Header;

@@ -5,26 +5,26 @@ import Values from "./values/Values";
 import Vision from "./vision/Vision";
 
 const About = () => {
-  return (
-    <div className="about">
-      <Text variant="h2" className="about__title">
+    return (
+        <div className="about">
+            <Text variant="h2" className="about__title">
         Nosotros
-      </Text>
+            </Text>
 
-      {/* Secciones principales */}
-      <section className="about__section">
-        <Mission />
-      </section>
+            {/* Secciones principales */}
+            <section className="about__section">
+                <Mission />
+            </section>
 
-      <section className="about__section">
-        <Vision />
-      </section>
+            <section className="about__section">
+                <Vision />
+            </section>
 
-      <section className="about__section">
-        <Values />
-      </section>
-    </div>
-  );
+            <section className="about__section">
+                <Values />
+            </section>
+        </div>
+    );
 };
 
 export default About;
