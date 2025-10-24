@@ -1,62 +1,58 @@
 // backend/routes/product.router.js
 import { Router } from "express";
-import fs from "fs/promises";
 import multer from "multer";
-import path from "path";
 import ProductController from "../controllers/product.controller.js";
-import paths from "../utils/paths.js";
+import { uploadBufferToCloudinary } from "../services/upload.service.js"; // 👈 nuevo import
 
 const router = Router();
 const controller = new ProductController();
 
-// helper simple para nombres “seguros”
-// (func-style → expresión; y quitamos escape innecesario del guion en la RegExp)
-const slugify = (text) =>
-    String(text || "")
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9.-]+/g, "-") // "-" sin escape (no-useless-escape)
-        .replace(/(^-|-$)/g, "");
+// Usamos memoria en lugar de disco (Vercel no permite escribir al filesystem)
+const upload = multer({ storage: multer.memoryStorage() });
 
-// (func-style → expresión) y evitamos bloque vacío en catch + no-unused-vars
-const ensureDir = async (dir) => {
-    try {
-        await fs.mkdir(dir, { recursive: true });
-    } catch {
-    // no rompemos el flujo si ya existe o no tenemos permisos
+// ---------------------- RUTAS ----------------------
+
+// Obtener todos los productos
+router.get("/", (req, res) => controller.findAll(req, res));
+
+// Obtener producto por ID
+router.get("/:id", (req, res) => controller.findById(req, res));
+
+// Crear producto con imagen (Cloudinary)
+router.post("/", upload.single("thumbnail"), async (req, res) => {
+  try {
+    // si vino archivo, subimos a Cloudinary
+    if (req.file?.buffer) {
+      const fileName = req.file.originalname || `product_${Date.now()}.jpg`;
+      const result = await uploadBufferToCloudinary(req.file.buffer, fileName);
+      req.body.thumbnail = result.secure_url; // 👈 URL Cloudinary
     }
-};
-
-const storage = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        try {
-            await ensureDir(paths.imagesProducts);
-            cb(null, paths.imagesProducts);
-        } catch (e) {
-            cb(e);
-        }
-    },
-    filename: (req, file, cb) => {
-    // Preferimos basar el nombre en "name" cuando exista
-        const base = slugify(req.body?.name) || Date.now().toString();
-        const orig = slugify(file.originalname || "image.png");
-        const ext = path.extname(orig) || ".png";
-        // prefijo timestamp para unicidad
-        const filename = `${Date.now()}-${base}${ext}`;
-        console.log(`[MULTER] filename → ${filename}`);
-        cb(null, filename);
-    },
+    await controller.create(req, res);
+  } catch (err) {
+    console.error("Error al crear producto:", err);
+    res.status(500).json({ error: "Error subiendo imagen o creando producto" });
+  }
 });
 
-const upload = multer({ storage });
+// Actualizar producto (puede reemplazar imagen)
+router.put("/:id", upload.single("thumbnail"), async (req, res) => {
+  try {
+    if (req.file?.buffer) {
+      const fileName = req.file.originalname || `product_${Date.now()}.jpg`;
+      const result = await uploadBufferToCloudinary(req.file.buffer, fileName);
+      req.body.thumbnail = result.secure_url;
+    }
+    await controller.update(req, res);
+  } catch (err) {
+    console.error("Error al actualizar producto:", err);
+    res.status(500).json({ error: "Error subiendo imagen o actualizando producto" });
+  }
+});
 
-// Rutas (sin remover nada)
-router.get("/", (req, res) => controller.findAll(req, res));
-router.get("/:id", (req, res) => controller.findById(req, res));
-router.post("/", upload.single("thumbnail"), (req, res) => controller.create(req, res));
-router.put("/:id", upload.single("thumbnail"), (req, res) => controller.update(req, res));
+// Eliminar producto
 router.delete("/:id", (req, res) => controller.delete(req, res));
+
+// Registrar compra
 router.post("/purchase", (req, res) => controller.purchase(req, res));
 
 export default router;
