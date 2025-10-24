@@ -85,4 +85,7 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 /* ---------- Handler para Vercel ---------- */
-export default app; // @vercel/node acepta exportar el app de Express directamente
+/** Exportar un handler explícito evita problemas de detección en Vercel */
+export default function handler(req, res) {
+  return app(req, res);
+}
