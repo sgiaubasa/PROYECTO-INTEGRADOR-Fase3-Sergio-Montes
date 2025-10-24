@@ -84,8 +84,9 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-/* ---------- Handler para Vercel ---------- */
-/** Exportar un handler explícito evita problemas de detección en Vercel */
+
+// al final del archivo:
 export default function handler(req, res) {
   return app(req, res);
 }
+
