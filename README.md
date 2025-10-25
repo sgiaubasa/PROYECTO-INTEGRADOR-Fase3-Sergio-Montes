@@ -1,0 +1,1 @@
+Hola profe dejo el vercel del frontend https://proyecto-integrador-fase3-sergio-mo.vercel.app/ quiero levantar en monorepo y no me deja me da error 404 y el backend no lo puedo levantar en el proyecto si puedo y anda bien pero hay algo en la configuracion de vercel que no lo puedo determinar perdon
