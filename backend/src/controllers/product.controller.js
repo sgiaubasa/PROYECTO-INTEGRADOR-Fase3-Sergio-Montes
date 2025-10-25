@@ -1,40 +1,51 @@
-// backend/controllers/product.controller.js
 import Product from "../models/product.model.js";
 import ErrorService from "../services/error.service.js";
 import ProductService from "../services/product.service.js";
-// ❌ No más filesystem local ni deletes de archivos
-// import { deleteImageFile } from "../utils/imageFileHandler.js";
-// import paths from "../utils/paths.js";
-
 import {
-    validateCreateProduct,
-    validateProductFilters,
-    validateUpdateProduct,
+  validateCreateProduct,
+  validateProductFilters,
+  validateUpdateProduct,
 } from "../validators/product.validator.js";
 
-// 🔧 normaliza body que viene de multipart/form-data
+// Normaliza tipos desde multipart/form-data
 const normalizeMultipartBody = (raw = {}) => {
-  const out = { ...raw };
+  const out = {};
+
   if (raw.name !== undefined) out.name = String(raw.name ?? "").trim();
   if (raw.description !== undefined) out.description = String(raw.description ?? "").trim();
+
   if (raw.price !== undefined) {
-    out.price = raw.price === "" || raw.price === null ? NaN : Number(raw.price);
+    const n = Number(raw.price);
+    if (!Number.isNaN(n)) out.price = n;
   }
   if (raw.stock !== undefined) {
-    out.stock = raw.stock === "" || raw.stock === null ? NaN : Number(raw.stock);
+    const n = Number(raw.stock);
+    if (!Number.isNaN(n)) out.stock = n;
   }
   if (raw.highlighted !== undefined) {
     const v = raw.highlighted;
     out.highlighted = v === true || v === "true" || v === 1 || v === "1";
   }
+
+  // Compat: si llega "image" como string (filename) y no hay thumbnail,
+  // lo mapeamos a thumbnail. (NO lo pasamos al validador)
+  if (typeof raw.image === "string" && raw.image.trim() && raw.thumbnail === undefined) {
+    out.thumbnail = raw.image.trim();
+  }
+
   return out;
 };
 
+// Toma archivo subido bajo image o thumbnail
+const pickUploadedFile = (req) => {
+  if (req.file) return req.file;
+  const fImg = Array.isArray(req.files?.image) ? req.files.image[0] : null;
+  const fThumb = Array.isArray(req.files?.thumbnail) ? req.files.thumbnail[0] : null;
+  return fImg || fThumb || null;
+};
+
 export default class ProductController {
-  #productService;
-  constructor() {
-    this.#productService = new ProductService();
-  }
+  #productService = new ProductService();
 
   async findAll(req, res) {
     try {
@@ -60,83 +71,85 @@ export default class ProductController {
 
   async create(req, res) {
     try {
-      console.log("\n[CREATE] body crudo:", req.body);
-      console.log("[CREATE] file:", req.file);
+      console.log("[CREATE] ctype:", req.headers["content-type"]);
+      console.log("[CREATE] body keys:", Object.keys(req.body || {}));
 
       const normalized = normalizeMultipartBody(req.body);
-      console.log("[CREATE] normalized:", normalized);
+      const file = pickUploadedFile(req);
 
-      const values = validateCreateProduct(normalized);
+      // ---- WHITELIST para validación: SIN thumbnail ----
+      const toValidate = {
+        name: normalized.name,
+        description: normalized.description ?? "",
+        price: normalized.price,
+        stock: normalized.stock,
+        highlighted: normalized.highlighted ?? false,
+      };
 
-      // ✅ CLOUDINARY: si el router subió imagen, ya dejó la URL en req.body.thumbnail
-      if (req.body?.thumbnail) {
-        values.thumbnail = req.body.thumbnail; // URL completa de Cloudinary
+      // Validar SOLO los campos que permite el schema
+      const validated = validateCreateProduct(toValidate);
+
+      // Recién AHORA agregamos thumbnail (si hay archivo) para guardar
+      if (file?.filename) {
+        validated.thumbnail = file.filename;
+      } else if (normalized.thumbnail) {
+        // si vino como string (caso compat), también se agrega después
+        validated.thumbnail = normalized.thumbnail;
       }
 
-      console.log("[CREATE] values:", values);
-
-      // Nota: mantenemos firma por compatibilidad (segundo arg puede ser undefined)
-      const product = await this.#productService.create(values, req.file);
-      console.log("[CREATE] OK id:", product?._id || product?.id);
-
-      res.status(201).json({ status: "success", payload: product });
+      const product = await this.#productService.create(validated, file);
+      return res.status(201).json({ status: "success", payload: product });
     } catch (error) {
-      // ❌ No más cleanup de archivos locales (no se guardan en disco)
       const handledError = ErrorService.handleError(error);
       console.error("[CREATE] error:", handledError.message);
-      res.status(handledError.code).json({ status: "error", message: handledError.message });
+      return res.status(handledError.code).json({ status: "error", message: handledError.message });
     }
   }
 
   async update(req, res) {
     try {
-      const { id } = req.params;
-      console.log("\n[UPDATE] id:", id);
-      console.log("[UPDATE] body crudo:", req.body);
-      console.log("[UPDATE] file:", req.file);
+      console.log("[UPDATE] id:", req.params?.id, "body keys:", Object.keys(req.body || {}));
 
       const normalized = normalizeMultipartBody(req.body);
-      console.log("[UPDATE] normalized:", normalized);
+      const file = pickUploadedFile(req);
 
-      const values = validateUpdateProduct(normalized);
+      // ---- WHITELIST dinámico para validación: SIN thumbnail ----
+      const toValidate = {};
+      if (normalized.name !== undefined) toValidate.name = normalized.name;
+      if (normalized.description !== undefined) toValidate.description = normalized.description;
+      if (normalized.price !== undefined) toValidate.price = normalized.price;
+      if (normalized.stock !== undefined) toValidate.stock = normalized.stock;
+      if (normalized.highlighted !== undefined) toValidate.highlighted = normalized.highlighted;
 
-      // ✅ CLOUDINARY: si el router subió nueva imagen, ya dejó la URL en req.body.thumbnail
-      if (req.body?.thumbnail) {
-        values.thumbnail = req.body.thumbnail; // URL completa de Cloudinary
-      }
+      const validated = validateUpdateProduct(toValidate);
 
-      console.log("[UPDATE] values:", values);
+      // Después de validar, aplicamos thumbnail si vino archivo nuevo o string
+      const toSave = { ...validated };
+      if (file?.filename) toSave.thumbnail = file.filename;
+      else if (normalized.thumbnail !== undefined) toSave.thumbnail = normalized.thumbnail;
 
-      // Nota: mantenemos firma por compatibilidad
-      const product = await this.#productService.update(id, values, req.file);
-      console.log("[UPDATE] OK id:", product?._id || product?.id);
-
-      res.status(200).json({ status: "success", payload: product });
+      const product = await this.#productService.update(req.params.id, toSave, file);
+      return res.status(200).json({ status: "success", payload: product });
     } catch (error) {
-      // ❌ No más cleanup de archivos locales
       const handledError = ErrorService.handleError(error);
       console.error("[UPDATE] error:", handledError.message);
-      res.status(handledError.code).json({ status: "error", message: handledError.message });
+      return res.status(handledError.code).json({ status: "error", message: handledError.message });
     }
   }
 
   async delete(req, res) {
     try {
       const { id } = req.params;
-      console.log("\n[DELETE] id:", id);
       await this.#productService.delete(id);
-      console.log("[DELETE] OK");
       res.status(200).json({ status: "success" });
     } catch (error) {
       const handledError = ErrorService.handleError(error);
-      console.error("[DELETE] error:", handledError.message);
       res.status(handledError.code).json({ status: "error", message: handledError.message });
     }
   }
 
   async purchase(req, res) {
     try {
-      console.log("\n[PURCHASE] body:", req.body);
       const items = Array.isArray(req.body?.items) ? req.body.items : [];
       if (items.length === 0) {
         return res.status(400).json({ status: "error", message: "No hay items para comprar" });
@@ -147,10 +160,7 @@ export default class ProductController {
         }
       }
       const ops = items.map(({ id, qty }) => ({
-        updateOne: {
-          filter: { _id: id, stock: { $gte: qty } },
-          update: { $inc: { stock: -qty } },
-        },
+        updateOne: { filter: { _id: id, stock: { $gte: qty } }, update: { $inc: { stock: -qty } } },
       }));
       const result = await Product.bulkWrite(ops, { ordered: false });
       const updated = result.modifiedCount ?? 0;
@@ -166,17 +176,13 @@ export default class ProductController {
           payload: after,
         });
       }
-      return res.status(200).json({
-        status: "success",
-        message: "Compra realizada con éxito. Stock actualizado.",
-      });
+      return res.status(200).json({ status: "success", message: "Compra realizada con éxito. Stock actualizado." });
     } catch (error) {
       const handledError = ErrorService.handleError(error);
-      console.error("[PURCHASE] error:", handledError.message);
-      res.status(handledError.code ?? 500).json({
-        status: "error",
-        message: handledError.message ?? "Error al procesar la compra",
-      });
+      res.status(handledError.code ?? 500).json({ status: "error", message: handledError.message ?? "Error al procesar la compra" });
     }
   }
 }
+
+
+

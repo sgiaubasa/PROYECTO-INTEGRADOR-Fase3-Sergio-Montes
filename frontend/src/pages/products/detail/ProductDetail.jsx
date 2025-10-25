@@ -4,6 +4,8 @@ import { ButtonPrimary } from "@/components/buttons";
 import { API_URL_IMAGES } from "@/constants/api.constant.js";
 import AppContext from "@/contexts/AppContext";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "./product-detail.scss";
@@ -20,12 +22,12 @@ export default function ProductDetail() {
     const navigate = useNavigate();
 
     const { shoppingCartContext } = useContext(AppContext);
-    const { addArticle } = shoppingCartContext; // 👈 la misma que usás en ProductItem
+    const { addArticle } = shoppingCartContext;
 
-    const [ product, setProduct ] = useState(null);
-    const [ loading, setLoading ] = useState(true);
-    const [ error, setError ] = useState(null);
-    const [ qty, setQty ] = useState(1);
+    const [product, setProduct] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [qty, setQty] = useState(1);
 
     useEffect(() => {
         let alive = true;
@@ -66,11 +68,23 @@ export default function ProductDetail() {
         const quantity = clampQty(qty, product.stock ?? 0);
         if (quantity <= 0) return;
 
-        // ✅ agrega al carrito con tu misma función del contexto
         addArticle(product.id, quantity);
-
-        // ✅ vuelve a la página de productos
         navigate("/products");
+    };
+
+    const handleEditProduct = () => {
+        navigate(`/products/${product.id}`);
+    };
+
+    const handleDeleteProduct = async () => {
+        try {
+            if (!confirm("¿Eliminar este producto? Esta acción no se puede deshacer.")) return;
+            await productsApi.removeProduct(product.id);
+            alert("Producto eliminado correctamente");
+            navigate("/products");
+        } catch (e) {
+            alert(e?.message || "No se pudo eliminar el producto");
+        }
     };
 
     if (loading) {
@@ -111,7 +125,8 @@ export default function ProductDetail() {
                         alt={product.name}
                         onError={(e) => {
                             e.currentTarget.src = `${API_URL_IMAGES}/products/fallback.jpg`;
-                        }}/>
+                        }}
+                    />
                 ) : (
                     <div className="product-detail__image--placeholder">Sin imagen</div>
                 )}
@@ -127,26 +142,41 @@ export default function ProductDetail() {
 
                 <div className="product-detail__cart">
                     <label>
-            Cantidad:
+                        Cantidad:
                         <input
                             type="number"
                             min={1}
                             max={product.stock || 99}
                             value={qty}
-                            onChange={onQtyChange}/>
+                            onChange={onQtyChange}
+                        />
                     </label>
 
-                    <ButtonPrimary
-                        className="product-detail__add"
-                        onClick={handleAddToCartAndBack}
-                        disabled={noStock || invalidQty}>
-                        <AddShoppingCartIcon />
-            &nbsp;Agregar al carrito
-                    </ButtonPrimary>
+                    {/* 🔹 Botones: Editar / Eliminar / Agregar */}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                        <ButtonPrimary onClick={handleEditProduct} title="Editar producto">
+                            <EditOutlinedIcon />&nbsp;Editar
+                        </ButtonPrimary>
+
+                        <ButtonPrimary
+                            onClick={handleDeleteProduct}
+                            title="Eliminar producto"
+                            style={{ background: "#b00020" }}>
+                            <DeleteOutlineIcon />&nbsp;Eliminar
+                        </ButtonPrimary>
+
+                        <ButtonPrimary
+                            className="product-detail__add"
+                            onClick={handleAddToCartAndBack}
+                            disabled={noStock || invalidQty}>
+                            <AddShoppingCartIcon />
+                            &nbsp;Agregar al carrito
+                        </ButtonPrimary>
+                    </div>
                 </div>
 
                 <Link to="/products" className="product-detail__back">
-          ← Volver al catálogo
+                    ← Volver al catálogo
                 </Link>
             </div>
         </section>

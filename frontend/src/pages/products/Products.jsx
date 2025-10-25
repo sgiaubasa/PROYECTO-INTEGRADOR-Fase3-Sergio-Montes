@@ -1,3 +1,4 @@
+// frontend/src/pages/products/Products.jsx
 import { Text } from "@/components/texts";
 import AppContext from "@/contexts/AppContext";
 import { useContext } from "react";
@@ -10,7 +11,23 @@ const Products = () => {
 
     return (
         <section className="products-page">
-            <Text variant="h2">Productos</Text>
+            {/* 🔹 Encabezado con botón Nuevo producto */}
+            <div
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 12,
+                    marginBottom: 16,
+                }}
+            >
+                <Text variant="h2">Productos</Text>
+
+                {/* Botón para crear un nuevo producto */}
+                <a href="/products/new" className="btn btn-primary">
+                    + Nuevo producto
+                </a>
+            </div>
 
             {/* Filtros de búsqueda */}
             <div className="products-page__filters">
@@ -20,7 +37,10 @@ const Products = () => {
                         className="filters__search"
                         placeholder="Buscar por nombre…"
                         value={filters.name ?? ""}
-                        onChange={(e) => setFilters((f) => ({ ...f, name: e.target.value }))}/>
+                        onChange={(e) =>
+                            setFilters((f) => ({ ...f, name: e.target.value }))
+                        }
+                    />
                 </div>
 
                 <label className="filters__check">
@@ -28,14 +48,21 @@ const Products = () => {
                         type="checkbox"
                         checked={filters.highlighted === true}
                         onChange={(e) =>
-                            setFilters((f) => ({ ...f, highlighted: e.target.checked ? true : undefined }))
-                        }/>
+                            setFilters((f) => ({
+                                ...f,
+                                highlighted: e.target.checked ? true : undefined,
+                            }))
+                        }
+                    />
                     <span>Solo destacados</span>
                 </label>
 
-                {isLoading && <span className="filters__loading">Cargando…</span>}
+                {isLoading && (
+                    <span className="filters__loading">Cargando…</span>
+                )}
             </div>
 
+            {/* Galería de productos */}
             <ProductGallery />
         </section>
     );

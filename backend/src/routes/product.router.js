@@ -1,58 +1,54 @@
-// backend/routes/product.router.js
 import { Router } from "express";
+import fs from "fs";
 import multer from "multer";
+import path from "path";
 import ProductController from "../controllers/product.controller.js";
-import { uploadBufferToCloudinary } from "../services/upload.service.js"; // 👈 nuevo import
 
 const router = Router();
 const controller = new ProductController();
 
-// Usamos memoria en lugar de disco (Vercel no permite escribir al filesystem)
-const upload = multer({ storage: multer.memoryStorage() });
+const WINDOWS_PRODUCTS_DIR =
+  "C:\\Users\\sergio.montes\\Desktop\\PROYECTO-INTEGRADOR-Fase3-Sergio-Montes-main\\backend\\public\\images\\products";
 
-// ---------------------- RUTAS ----------------------
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    try {
+      if (!fs.existsSync(WINDOWS_PRODUCTS_DIR)) {
+        fs.mkdirSync(WINDOWS_PRODUCTS_DIR, { recursive: true });
+      }
+      cb(null, WINDOWS_PRODUCTS_DIR);
+    } catch (err) {
+      cb(err);
+    }
+  },
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname) || ".jpg";
+    const base = path.basename(file.originalname, ext).replace(/\s+/g, "_");
+    cb(null, `${Date.now()}_${base}${ext}`);
+  },
+});
 
-// Obtener todos los productos
+const upload = multer({ storage });
+
+// Aceptamos archivo bajo "image" o "thumbnail"
+const acceptImageFields = upload.fields([
+  { name: "image", maxCount: 1 },
+  { name: "thumbnail", maxCount: 1 },
+]);
+
 router.get("/", (req, res) => controller.findAll(req, res));
-
-// Obtener producto por ID
 router.get("/:id", (req, res) => controller.findById(req, res));
 
-// Crear producto con imagen (Cloudinary)
-router.post("/", upload.single("thumbnail"), async (req, res) => {
-  try {
-    // si vino archivo, subimos a Cloudinary
-    if (req.file?.buffer) {
-      const fileName = req.file.originalname || `product_${Date.now()}.jpg`;
-      const result = await uploadBufferToCloudinary(req.file.buffer, fileName);
-      req.body.thumbnail = result.secure_url; // 👈 URL Cloudinary
-    }
-    await controller.create(req, res);
-  } catch (err) {
-    console.error("Error al crear producto:", err);
-    res.status(500).json({ error: "Error subiendo imagen o creando producto" });
-  }
-});
+router.post("/", acceptImageFields, (req, res) => controller.create(req, res));
+router.put("/:id", acceptImageFields, (req, res) => controller.update(req, res));
 
-// Actualizar producto (puede reemplazar imagen)
-router.put("/:id", upload.single("thumbnail"), async (req, res) => {
-  try {
-    if (req.file?.buffer) {
-      const fileName = req.file.originalname || `product_${Date.now()}.jpg`;
-      const result = await uploadBufferToCloudinary(req.file.buffer, fileName);
-      req.body.thumbnail = result.secure_url;
-    }
-    await controller.update(req, res);
-  } catch (err) {
-    console.error("Error al actualizar producto:", err);
-    res.status(500).json({ error: "Error subiendo imagen o actualizando producto" });
-  }
-});
-
-// Eliminar producto
 router.delete("/:id", (req, res) => controller.delete(req, res));
-
-// Registrar compra
 router.post("/purchase", (req, res) => controller.purchase(req, res));
 
 export default router;
+
+
+
+
+
+
