@@ -1,0 +1,150 @@
+@use "@/scss/variables" as var;
+
+.product-item {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 460px;
+    /* altura consistente */
+    border-radius: 16px;
+    overflow: hidden;
+    background: var.$color-neutro-100;
+    box-shadow: 0 4px 8px var.$color-dark-alpha-100;
+    transition: transform .2s ease, box-shadow .2s ease;
+
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 12px var.$color-dark-alpha-300;
+    }
+
+    /* === MARCO DE LA IMAGEN (controla tamaño/recorte) === */
+    .MuiCardActionArea-root {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        /* <-- TODAS iguales */
+        overflow: hidden;
+        border-radius: 12px;
+        background: #f3f5f7;
+        /* fondo neutro al cargar */
+    }
+
+    /* Imagen uniforme dentro del marco (sin alturas fijas) */
+    &__image {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        /* recorte parejo */
+        cursor: pointer;
+        display: block;
+    }
+
+    /* Contenido textual */
+    &__content {
+        flex: 1 1 auto;
+        /* ocupa el espacio disponible */
+        padding: var.$spacing-md;
+        display: flex;
+        flex-direction: column;
+        gap: var.$spacing-xs;
+        min-height: 0;
+        /* evita overflow con clamp */
+    }
+
+    &__name {
+        font-size: var.$font-size-lg;
+        font-weight: var.$font-weight-bold;
+        color: var.$color-ak-primary-800;
+        margin: 0;
+
+        /* máximo 2 líneas */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    &__description {
+        font-size: var.$font-size-sm;
+        color: var.$color-neutro-600;
+        margin: 0;
+        /* puede crecer pero no empuja precio */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        line-clamp: 2;
+        -webkit-line-clamp: 2;
+        /* ajustá a 2–3 si querés */
+        -webkit-box-orient: vertical;
+    }
+
+    /* 🔽 SIEMPRE en el mismo lugar dentro del contenido */
+    &__price {
+        margin-top: auto;
+        /* empuja el precio al final del content */
+        font-size: var.$font-size-md;
+        font-weight: var.$font-weight-bold;
+        color: var.$color-success-700;
+        text-align: right;
+    }
+
+    /* 🔽 SIEMPRE al fondo de la card */
+    &__actions {
+        margin-top: auto;
+        /* asegura que quede pegado abajo */
+        display: flex;
+        justify-content: center;
+        gap: var.$spacing-sm;
+        padding: var.$spacing-sm var.$spacing-md var.$spacing-md;
+        border-top: 1px solid var.$color-neutro-300;
+
+        /* estilo para tus ButtonPrimary */
+        .product-item__add,
+        .product-item__remove {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            border-radius: 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-item__add {
+            color: var.$color-confirm-500;
+        }
+
+        .product-item__remove {
+            color: var.$color-warning-600;
+        }
+    }
+
+    /* Mensaje SIN STOCK si lo devolvés desde renderActions */
+    &__nostock,
+    &__actions>p,
+    &__actions>span {
+        color: var.$color-danger-700;
+        font-weight: var.$font-weight-bold;
+        margin: 0;
+        text-align: center;
+    }
+
+    /* Skeletons: que respeten los radios */
+    &__image--skeleton,
+    &__name--skeleton,
+    &__description--skeleton,
+    &__price--skeleton,
+    &__actions--skeleton {
+        border-radius: 12px;
+    }
+
+    /* Skeleton de imagen con el mismo alto visual (16:9) */
+    &__image--skeleton {
+        aspect-ratio: 16 / 9;
+        width: 100%;
+    }
+}

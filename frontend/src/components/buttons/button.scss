@@ -1,0 +1,53 @@
+@use "@/scss/variables" as var;
+
+.button {
+    color: var.$color-neutro-100;
+    font-size: var.$font-size-sm;
+
+    background-color: var.$color-primary-500;
+    border: none;
+    border-radius: 0.25rem;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+
+    &--sm {
+        padding: var.$spacing-xs;
+        min-width: 50px;
+    }
+
+    &--md {
+        padding: var.$spacing-sm;
+        min-width: 100px;
+    }
+
+    &--lg {
+        padding: var.$spacing-md;
+        min-width: 150px;
+    }
+
+    &--danger {
+        background-color: var.$color-danger-500;
+
+        &:hover {
+            background-color: var.$color-danger-700;
+        }
+
+        &:disabled {
+            background-color: var.$color-danger-300;
+            cursor: not-allowed;
+        }
+    }
+
+    &--primary {
+        background-color: var.$color-primary-700;
+
+        &:hover {
+            background-color: var.$color-primary-800;
+        }
+
+        &:disabled {
+            background-color: var.$color-primary-300;
+            cursor: not-allowed;
+        }
+    }
+}

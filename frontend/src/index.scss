@@ -1,0 +1,7 @@
+@use "@/scss/variables" as var;
+@use "@/scss/_reset";
+
+#root {
+    min-height: 100vh;
+    background-color: var.$color-neutro-200;
+}

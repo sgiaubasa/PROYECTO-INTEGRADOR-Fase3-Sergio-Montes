@@ -1,0 +1,49 @@
+@use "@/scss/variables" as var;
+
+.alert {
+    &__content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        width: fit-content;
+        min-width: 300px;
+        padding: 0 var.$spacing-sm;
+
+        background-color: var.$color-neutro-100;
+        border: 1px solid var.$color-neutro-500;
+        border-radius: 0.25rem;
+    }
+
+    &__message,
+    &__icon {
+        font-size: var.$font-size-md !important;
+        color: var.$color-neutro-700;
+    }
+
+    &--success &__message,
+    &--success &__icon {
+        color: var.$color-success-700;
+    }
+
+    &--danger &__message,
+    &--danger &__icon {
+        color: var.$color-danger-700;
+    }
+
+    &--success &__content {
+        background-color: var.$color-success-100;
+        border-color: var.$color-success-500;
+    }
+
+    &--danger &__content {
+        background-color: var.$color-danger-100;
+        border-color: var.$color-danger-500;
+    }
+
+    &--success-form {
+        position: static !important;
+        display: flex;
+        justify-content: center;
+    }
+}

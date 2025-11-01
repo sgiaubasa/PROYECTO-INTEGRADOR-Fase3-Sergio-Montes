@@ -1,0 +1,66 @@
+@use "@/scss/variables" as var;
+
+.footer {
+    grid-area: footer;
+    padding: var.$spacing-md 5%;
+    background-color: var.$color-ak-neutral-800;
+    box-sizing: border-box;
+
+    &_content {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: var.$spacing-md;
+        padding: var.$spacing-sm 0;
+
+        a {
+            color: var.$color-ak-light;
+            text-decoration: none;
+            font-weight: var.$font-weight-bold;
+            transition: color 0.2s ease;
+
+            &:hover {
+                color: var.$color-ak-accent-500;
+            }
+        }
+
+        h3,
+        h4 {
+            color: var.$color-ak-light;
+            margin-bottom: var.$spacing-xs;
+            font-size: var.$font-size-md;
+            font-weight: var.$font-weight-bold;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+                margin-bottom: var.$spacing-xs;
+            }
+        }
+    }
+
+    &_copyright {
+        color: var.$color-ak-light;
+        font-size: var.$font-size-sm;
+        font-weight: var.$font-weight-regular;
+        text-align: center;
+        margin-top: var.$spacing-sm;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: var.$spacing-sm;
+    }
+
+    @media (max-width: 768px) {
+        &_content {
+            grid-template-columns: 1fr;
+            text-align: center;
+
+            a {
+                display: inline-block;
+                margin: 4px 8px;
+            }
+        }
+    }
+}

@@ -1,0 +1,279 @@
+{
+	"info": {
+		"_postman_id": "8fe92256-c962-4773-86cf-009dc5338cc5",
+		"name": "Proyecto Integrador EIT 2025 - Backend API",
+		"description": "Colección de Postman para el backend del Proyecto Integrador F3",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "16083181"
+	},
+	"item": [
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products?name=prueba&highlighted=true",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "prueba"
+								},
+								{
+									"key": "highlighted",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Product by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "68e6f6f797dcc475bb647050",
+									"description": "ID del producto"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Product",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Producto de Prueba",
+									"description": "Nombre del producto (requerido)",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Esta es la descripción del producto de prueba",
+									"description": "Descripción del producto (requerido)",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "99.99",
+									"description": "Precio del producto (requerido, número >= 0)",
+									"type": "text"
+								},
+								{
+									"key": "stock",
+									"value": "10",
+									"description": "Stock del producto (requerido, número entero >= 0)",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"description": "Imagen del producto (opcional)",
+									"type": "file",
+									"src": "/home/sergio/programacion/EIT/FULLSTACK-2025-03-EIT/plantillas/proyecto_f1_v2/src/assets/images/cars/img07.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Producto Actualizado",
+									"description": "Nombre actualizado (opcional)",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "Descripción actualizada",
+									"description": "Descripción actualizada (opcional)",
+									"type": "text"
+								},
+								{
+									"key": "price",
+									"value": "89.99",
+									"description": "Precio actualizado (opcional)",
+									"type": "text"
+								},
+								{
+									"key": "stock",
+									"value": "15",
+									"description": "Stock actualizado (opcional)",
+									"type": "text"
+								},
+								{
+									"key": "image",
+									"description": "Nueva imagen (opcional)",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "68e2eee0f3b30b889791f193",
+									"description": "ID del producto a actualizar"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Product",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/products/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"products",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "507f1f77bcf86cd799439011",
+									"description": "ID del producto a eliminar"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Institution",
+			"item": [
+				{
+					"name": "Get Institution",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/institutions",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"institutions"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Inquiry",
+			"item": [
+				{
+					"name": "Send Inquiry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Juan\",\n  \"surname\": \"Pérez\",\n  \"email\": \"juan.perez@example.com\",\n  \"phone\": \"123456789\",\n  \"inquiry\": \"Hola, me gustaría saber más información sobre sus productos y servicios. ¿Tienen envíos a todo el país?\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/inquiry/send-mail",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"inquiry",
+								"send-mail"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	]
+}

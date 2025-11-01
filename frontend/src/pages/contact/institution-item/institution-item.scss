@@ -1,0 +1,19 @@
+@use "@/scss/variables" as var;
+
+.institution-item {
+    display: flex;
+    flex-direction: column;
+    gap: var.$spacing-xs;
+
+    &__label {
+        color: var.$color-neutro-700;
+        font-size: var.$font-size-md;
+        font-weight: var.$font-weight-bold;
+    }
+
+    &__value {
+        color: var.$color-neutro-700;
+        font-size: var.$font-size-md;
+        font-weight: var.$font-weight-regular;
+    }
+}

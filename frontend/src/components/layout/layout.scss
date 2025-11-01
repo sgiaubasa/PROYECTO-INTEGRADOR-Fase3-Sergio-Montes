@@ -1,0 +1,13 @@
+@use "@/scss/variables" as var;
+
+.layout {
+    min-height: 100vh;
+
+    display: grid;
+    grid-template-areas:
+        "header"
+        "navbar"
+        "main"
+        "footer";
+    grid-template-rows: max-content max-content 1fr max-content;
+}

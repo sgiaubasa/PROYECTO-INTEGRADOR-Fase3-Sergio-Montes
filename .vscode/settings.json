@@ -1,0 +1,109 @@
+{
+  // ▼ General ===============================================================================
+  "files.autoSave": "off",
+  "scm.autoReveal": true,
+  "scm.defaultViewMode": "tree",
+  "scm.alwaysShowRepositories": true,
+  // ▼ Interfaz de Usuario ===================================================================
+  "window.zoomLevel": 0,
+  "workbench.tree.enableStickyScroll": false,
+  "workbench.startupEditor": "none",
+  "workbench.editor.pinnedTabsOnSeparateRow": true,
+  "workbench.editor.pinnedTabSizing": "normal",
+  "workbench.colorTheme": "Default Dark Modern",
+  "workbench.iconTheme": "material-icon-theme",
+  "material-icon-theme.activeIconPack": "nest",
+  "material-icon-theme.folders.theme": "classic",
+  "material-icon-theme.folders.color": "#AB8715",
+  // ▼ Explorador de Archivos ================================================================
+  "explorer.compactFolders": false,
+  "explorer.confirmDelete": false,
+  "explorer.confirmPasteNative": false,
+  "explorer.confirmDragAndDrop": false,
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.vscode": true,
+    "**/.git": true
+  },
+  // ▼ Terminal Integrado =====================================================================
+  "terminal.integrated.cursorStyle": "line",
+  "terminal.integrated.cursorWidth": 1,
+  "terminal.integrated.cursorStyleInactive": "line",
+  "terminal.integrated.cursorBlinking": true,
+  "terminal.integrated.tabs.focusMode": "singleClick",
+  // ▼ Editor de Código =======================================================================
+  "editor.minimap.enabled": false,
+  "editor.linkedEditing": true,
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": true,
+  "editor.tabSize": 4,
+  "editor.autoIndent": "full",
+  "editor.formatOnPaste": false,
+  "editor.formatOnSave": true,
+  "editor.formatOnSaveMode": "file",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll": "explicit",
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features",
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[html]": {
+    "editor.defaultFormatter": "vscode.html-language-features",
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml"
+  },
+  "[css]": {
+    "editor.defaultFormatter": "vscode.css-language-features"
+  },
+  "[scss]": {
+    "editor.defaultFormatter": "vscode.css-language-features",
+  },
+  "[markdown]": {
+    "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+  },
+  // ▼ Eslint Linter ==========================================================================
+  "eslint.enable": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.options": "--fix",
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact"
+  ],
+  // ▼ Corrector Ortográfico ==================================================================
+  "cSpell.words": [],
+  // ▼ Git ====================================================================================
+  "git.autofetch": true,
+  "git.autofetchPeriod": 300,
+  // ▼ Compilador Sass ========================================================================
+  "liveSassCompile.settings.showOutputWindowOn": "Error",
+  "liveSassCompile.settings.formats": [
+    {
+      "format": "expanded",
+      "extensionName": ".css",
+      "savePath": "/../css",
+      "generateMap": false
+    }
+  ],
+  "liveSassCompile.settings.excludeList": [
+    "/**/node_modules/**"
+  ],
+}

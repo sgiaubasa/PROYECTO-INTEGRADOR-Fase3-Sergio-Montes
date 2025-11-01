@@ -1,0 +1,197 @@
+@use "@/scss/variables" as var;
+
+.shopping-cart {
+    background-color: var.$color-ak-light;
+    padding: var.$spacing-lg;
+    border-radius: 16px;
+    box-shadow: 0 2px 6px var.$color-dark-alpha-100;
+
+    h2 {
+        font-size: var.$font-size-xl;
+        font-weight: var.$font-weight-bold;
+        color: var.$color-ak-primary-600;
+        margin-bottom: var.$spacing-md;
+        text-align: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: var.$spacing-md;
+    }
+
+    thead {
+        background-color: var.$color-ak-primary-100;
+
+        th,
+        .MuiTableCell-head {
+            font-size: var.$font-size-sm;
+            font-weight: var.$font-weight-bold;
+            color: var.$color-ak-primary-700;
+            text-transform: uppercase;
+            padding: var.$spacing-sm;
+            border-bottom: 2px solid var.$color-ak-primary-300;
+        }
+    }
+
+    tbody {
+        tr {
+            &:nth-child(even) {
+                background-color: var.$color-neutro-200;
+            }
+        }
+
+        td,
+        .MuiTableCell-body {
+            padding: var.$spacing-sm;
+            font-size: var.$font-size-md;
+            color: var.$color-ak-neutral-800;
+            vertical-align: middle;
+        }
+
+        td:nth-child(2) {
+            white-space: nowrap;
+
+            button {
+                background: none;
+                border: 1px solid var.$color-ak-primary-500;
+                border-radius: 8px;
+                padding: var.$spacing-xss var.$spacing-sm;
+                margin: 0 var.$spacing-xss;
+                cursor: pointer;
+                font-size: var.$font-size-sm;
+                min-width: 36px;
+                height: 36px;
+                line-height: 1;
+                transition: background .2s, color .2s, border-color .2s;
+
+                &:hover {
+                    background-color: var.$color-ak-primary-500;
+                    color: var.$color-neutro-100;
+                }
+
+                &:disabled {
+                    border-color: var.$color-neutro-400;
+                    color: var.$color-neutro-500;
+                    cursor: not-allowed;
+                    background-color: transparent;
+                }
+            }
+
+            span {
+                display: inline-block;
+                min-width: 28px;
+                text-align: center;
+                font-weight: 600;
+            }
+        }
+
+        td:nth-child(3),
+        td:nth-child(4) {
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+        }
+
+        td:nth-child(5) {
+            text-align: center;
+
+            button {
+                border: 1px solid var.$color-danger-500;
+                color: var.$color-danger-700;
+                background: none;
+                border-radius: 8px;
+                padding: var.$spacing-xss var.$spacing-sm;
+                min-width: 90px;
+
+                &:hover {
+                    background-color: var.$color-danger-500;
+                    color: var.$color-neutro-100;
+                }
+            }
+
+            /* si agregás className="btn-remove", queda igual */
+            .btn-remove {
+                border-color: var.$color-danger-500;
+                color: var.$color-danger-700;
+
+                &:hover {
+                    background-color: var.$color-danger-500;
+                    color: var.$color-neutro-100;
+                }
+            }
+        }
+    }
+
+    .table__footer {
+        display: flex;
+        gap: var.$spacing-md;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: var.$spacing-md;
+        padding-top: var.$spacing-sm;
+        border-top: 1px dashed var.$color-ak-primary-200;
+
+        .table__total {
+            font-size: var.$font-size-lg;
+            font-weight: var.$font-weight-bold;
+            color: var.$color-ak-accent-600;
+        }
+
+        .btn {
+            padding: var.$spacing-sm var.$spacing-md;
+            font-size: var.$font-size-md;
+            font-weight: var.$font-weight-bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background .2s, transform .06s ease-in-out;
+
+            &:active {
+                transform: scale(0.98);
+            }
+        }
+
+        .btn-primary {
+            background-color: var.$color-ak-primary-500;
+            color: var.$color-neutro-100;
+            border: none;
+
+            &:hover {
+                background-color: var.$color-ak-primary-600;
+            }
+
+            &:disabled {
+                background-color: var.$color-neutro-300;
+                color: var.$color-neutro-600;
+                cursor: not-allowed;
+            }
+        }
+
+        .btn-danger {
+            background-color: var.$color-danger-500;
+            color: var.$color-neutro-100;
+            border: none;
+
+            &:hover {
+                background-color: var.$color-danger-700;
+            }
+        }
+    }
+
+    @media (max-width: 640px) {
+        .table__footer {
+            flex-direction: column;
+            align-items: stretch;
+
+            .table__total {
+                text-align: center;
+                margin-bottom: var.$spacing-sm;
+            }
+
+            >div {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+            }
+        }
+    }
+}

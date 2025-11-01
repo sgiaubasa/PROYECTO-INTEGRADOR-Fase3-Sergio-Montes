@@ -1,0 +1,14 @@
+@use "@/scss/variables" as var;
+
+.navbar-list {
+    display: flex;
+    gap: var.$spacing-md;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        gap: var.$spacing-xs;
+        width: fit-content;
+        min-width: 200px;
+        padding: var.$spacing-sm;
+    }
+}

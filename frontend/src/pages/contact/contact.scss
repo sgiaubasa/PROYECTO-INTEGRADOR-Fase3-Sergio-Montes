@@ -1,0 +1,179 @@
+@use "@/scss/variables" as var;
+
+.contact {
+    /* padding horizontal fluido para que no “corte” en móviles */
+    padding: var.$spacing-xl clamp(12px, 4vw, 48px);
+    background-color: var.$color-neutro-100;
+
+    /* Título principal */
+    &__title,
+    h2,
+    .text--h2 {
+        font-size: var.$font-size-xxl;
+        font-weight: var.$font-weight-bold;
+        color: var.$color-ak-primary-800;
+        margin-bottom: var.$spacing-lg;
+        text-align: center;
+        position: relative;
+        /* necesario para el pseudo-elemento */
+
+        /* 🔹 Línea decorativa debajo del título */
+        &::after {
+            content: "";
+            display: block;
+            width: 60px;
+            height: 4px;
+            margin: var.$spacing-sm auto 0;
+            background: var.$color-ak-primary-500;
+            border-radius: 2px;
+        }
+    }
+
+    /* Grid de 2 columnas → 1 columna antes para que nada quede apretado */
+    &__content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var.$spacing-xl;
+
+        @media (max-width: 1024px) {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Tarjeta izquierda: datos / institución */
+    &__institution,
+    &__data {
+        background: var.$color-neutro-200;
+        padding: var.$spacing-lg;
+        border-radius: 0.75rem;
+        box-shadow: 0 4px 10px var.$color-dark-alpha-100;
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            font-size: var.$font-size-md;
+            color: var.$color-neutro-700;
+            margin-bottom: var.$spacing-sm;
+            display: flex;
+            align-items: center;
+            gap: var.$spacing-sm;
+
+            i {
+                color: var.$color-ak-primary-600;
+                font-size: var.$font-size-lg;
+            }
+
+            a {
+                color: var.$color-ak-primary-700;
+                text-decoration: none;
+                font-weight: var.$font-weight-bold;
+
+                &:hover {
+                    color: var.$color-ak-primary-900;
+                    text-decoration: underline;
+                }
+            }
+        }
+    }
+
+    /* Columna derecha: quitamos “doble tarjeta” y
+     dejamos que el <form> ocupe todo el ancho */
+    &__form {
+        background: transparent;
+        padding: 0 !important;
+        border-radius: 0;
+        box-shadow: none;
+
+        /* Subtítulo “Formulario de consulta” */
+        h3,
+        .text--h3,
+        > :first-child {
+            font-size: var.$font-size-lg;
+            font-weight: var.$font-weight-bold;
+            color: var.$color-ak-primary-700;
+            margin-bottom: var.$spacing-sm;
+            border-bottom: 2px solid var.$color-ak-primary-300;
+            padding-bottom: var.$spacing-xs;
+        }
+
+        /* El panel crema (contact-form) a full width */
+        >.contact-form {
+            margin: 0 !important;
+            width: 100% !important;
+            border-radius: 12px !important;
+        }
+    }
+}
+
+/* Utilitarios opcionales si tu componente Institution usa .form */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: var.$spacing-md;
+
+    &__group {
+        display: flex;
+        flex-direction: column;
+        gap: var.$spacing-xs;
+
+        label {
+            font-size: var.$font-size-sm;
+            font-weight: var.$font-weight-bold;
+            color: var.$color-neutro-800;
+        }
+
+        input,
+        textarea {
+            padding: var.$spacing-sm;
+            border: 1px solid var.$color-neutro-400;
+            border-radius: 0.5rem;
+            font-size: var.$font-size-md;
+            line-height: var.$line-height-md;
+            transition: border 0.3s, box-shadow 0.3s;
+
+            &:focus {
+                border-color: var.$color-ak-primary-500;
+                box-shadow: 0 0 0 3px var.$color-ak-primary-200;
+                outline: none;
+            }
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+    }
+
+    .btn {
+        align-self: flex-start;
+        padding: var.$spacing-sm var.$spacing-lg;
+        border: none;
+        border-radius: 0.5rem;
+        font-size: var.$font-size-md;
+        font-weight: var.$font-weight-bold;
+        cursor: pointer;
+        transition: background 0.3s;
+
+        &--primary {
+            background-color: var.$color-ak-primary-600;
+            color: var.$color-neutro-100;
+
+            &:hover {
+                background-color: var.$color-ak-primary-700;
+            }
+        }
+
+        &--danger {
+            background-color: var.$color-danger-500;
+            color: var.$color-neutro-100;
+
+            &:hover {
+                background-color: var.$color-danger-700;
+            }
+        }
+    }
+}
