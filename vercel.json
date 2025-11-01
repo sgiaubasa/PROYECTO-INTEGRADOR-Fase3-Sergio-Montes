@@ -2,19 +2,18 @@
   "version": 2,
   "builds": [
     { "src": "api/[...all].js", "use": "@vercel/node" },
-    { "src": "api/ping.js", "use": "@vercel/node" },
     { "src": "frontend/package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
   ],
   "functions": {
     "api/[...all].js": { "includeFiles": "backend/**", "memory": 1024 }
   },
   "routes": [
-    { "src": "^/api/ping$", "dest": "api/ping.js" },
     { "src": "^/api/(.*)$", "dest": "api/[...all].js" },
     { "src": "^/(.*)\\.(js|css|png|jpg|jpeg|svg|ico|webp|woff|woff2|ttf|map)$", "dest": "frontend/dist/$1.$2" },
     { "src": "^(?!/api).*", "dest": "frontend/dist/index.html" }
   ]
 }
+
 
 
 
