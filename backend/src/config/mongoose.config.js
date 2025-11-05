@@ -5,9 +5,11 @@ let cached = global._mongooseCached;
 if (!cached) cached = global._mongooseCached = { conn: null, promise: null, ok: false };
 
 export async function connectDB() {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI; // <- acepta ambos
+  const dbName = process.env.MONGODB_DB || process.env.MONGO_DB_NAME; // opcional
+
   if (!uri) {
-    console.warn("[DB] MONGODB_URI no está definido");
+    console.warn("[DB] MONGODB_URI/MONGO_URI no está definido");
     cached.ok = false;
     return null;
   }
@@ -17,11 +19,13 @@ export async function connectDB() {
     mongoose.set("bufferCommands", false);
     mongoose.set("strictQuery", true);
     const opts = { serverSelectionTimeoutMS: 10000, socketTimeoutMS: 20000 };
+    if (dbName) opts.dbName = dbName; // <- usa la DB correcta
 
     console.log("[DB] Conectando a MongoDB…");
     cached.promise = mongoose.connect(uri, opts)
       .then((m) => { 
-        console.log("[DB] OK:", m.connection.host); 
+        const { name, host } = m.connection;
+        console.log("[DB] OK:", { host, db: name }); // loguea la DB efectiva
         cached.ok = true; 
         return m; 
       })
@@ -35,20 +39,3 @@ export async function connectDB() {
   return cached.conn;
 }
 
-export function isDBConnected() {
-  return cached.ok === true && mongoose.connection?.readyState === 1;
-}
-
-/* ✅ VALIDADOR DE ObjectId */
-export function isValidId(id) {
-  return mongoose.Types.ObjectId.isValid(String(id));
-}
-
-/* ✅ CONVERSOR seguro */
-export function toObjectId(id) {
-  if (!isValidId(id)) throw new Error("ID de Mongo inválido");
-  return new mongoose.Types.ObjectId(String(id));
-}
-
-/* ✅ Export default opcional */
-export default { connectDB, isDBConnected, isValidId, toObjectId };
