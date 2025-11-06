@@ -25,9 +25,9 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 /* ---------- Middlewares base ---------- */
-if (configCors) configCors(app);
+if (typeof configCors === "function") configCors(app);
 app.use(express.json({ limit: "2mb" }));
-if (configJson) configJson(app);
+if (typeof configJson === "function") configJson(app);
 
 /* ---------- Healthcheck (sin depender de DB) ---------- */
 app.get("/api/health", (_req, res) => {
@@ -94,12 +94,12 @@ app.get("/api/debug/products/raw", async (_req, res) => {
 });
 
 /* ---------- Archivos estáticos centralizados ---------- */
-configStatic(app);
+if (typeof configStatic === "function") configStatic(app);
 
 /* ---------- Conexión DB (no bloquea el arranque) ---------- */
 (async () => {
   try {
-    if (connectDB) {
+    if (typeof connectDB === "function") {
       await connectDB();
       console.log("[db] conectada");
     } else {
@@ -116,12 +116,14 @@ app.use("/api/institutions", institutionRouter || ((_req, res) => res.sendStatus
 app.use("/api/products", productRouter || ((_req, res) => res.sendStatus(501)));
 app.use("/api/sliders", sliderRouter || ((_req, res) => res.sendStatus(501)));
 
-/* ---------- Server local (solo dev) ---------- */
+/* ---------- Server (dev y prod) ---------- */
 const PORT = process.env.PORT || 3000;
-if (process.env.NODE_ENV !== "production") {
-  app.listen(PORT, () => {
-    console.log(`[server] http://localhost:${PORT}`);
-  });
-}
+
+// En Render y cualquier hosting, debemos escuchar SIEMPRE.
+// 0.0.0.0 permite recibir conexiones externas.
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`[server] listening on http://0.0.0.0:${PORT} (NODE_ENV=${process.env.NODE_ENV})`);
+});
 
 export default app;
+
