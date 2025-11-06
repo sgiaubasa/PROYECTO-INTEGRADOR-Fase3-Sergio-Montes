@@ -3,92 +3,137 @@ import nodemailer from "nodemailer";
 
 const read = (k, d = "") => (process.env[k] ?? d)?.toString().trim();
 
-// ======================
-// Enviar con Brevo API
-// ======================
-async function sendViaBrevoAPI({ from, to, subject, html }) {
-  const API_KEY = read("BREVO_API_KEY");
-  const SENDER_EMAIL = read("BREVO_SENDER_EMAIL");
-  const SENDER_NAME = read("BREVO_SENDER_NAME", "Web Form");
+/* Utilidad de timeout para fetch (API HTTP) */
+function withTimeout(ms) {
+  const ctrl = new AbortController();
+  const id = setTimeout(() => ctrl.abort(), ms);
+  return { signal: ctrl.signal, clear: () => clearTimeout(id) };
+}
 
-  if (!API_KEY || !SENDER_EMAIL) {
-    throw new Error("Brevo API KEY o Sender no configurado");
+/* ============ Brevo API (HTTP) con timeout ============ */
+async function sendViaBrevoAPI({ from, to, subject, html, text, replyTo }) {
+  const API_KEY = read("BREVO_API_KEY");
+  const SENDER_EMAIL = read("BREVO_SENDER_EMAIL");     // remitente VERIFICADO en Brevo (no el @smtp-brevo.com)
+  const SENDER_NAME  = read("BREVO_SENDER_NAME", "Web");
+  const RECIPIENT    = to || read("BREVO_RECIPIENT");
+
+  if (!API_KEY || !SENDER_EMAIL || !RECIPIENT) {
+    throw new Error("Brevo API no configurado (BREVO_API_KEY / BREVO_SENDER_EMAIL / BREVO_RECIPIENT)");
   }
 
+  // Si viene "Nombre <mail@x>" en from, úsalo como replyTo
   const reply =
-    from && /<([^>]+)>/.exec(from)?.[1]
-      ? /<([^>]+)>/.exec(from)[1]
-      : undefined;
+    replyTo ||
+    (from && /<([^>]+)>/.exec(from)?.[1]) ||
+    undefined;
 
-  const body = {
+  const payload = {
     sender: { email: SENDER_EMAIL, name: SENDER_NAME },
-    to: [{ email: to }],
-    subject,
-    htmlContent: html,
+    to: [{ email: RECIPIENT }],
+    subject: subject || "Nueva consulta",
+    htmlContent: html || (text ? `<pre>${text}</pre>` : "<p>(sin contenido)</p>"),
+    textContent: text || "",
     ...(reply ? { replyTo: { email: reply } } : {}),
   };
 
-  const res = await fetch("https://api.brevo.com/v3/smtp/email", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "api-key": API_KEY,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    console.error("Brevo API error:", err);
-    throw new Error(err);
-  }
-
-  console.log("📨 Enviado vía BREVO API");
-  return res.json();
-}
-
-// ======================
-// SMTP Fallback
-// ======================
-const createTransport = () => {
-  return nodemailer.createTransport({
-    host: read("SMTP_HOST"),
-    port: Number(read("SMTP_PORT", 587)),
-    secure: false,
-    auth: {
-      user: read("SMTP_USER"),
-      pass: read("SMTP_PASS"),
-    },
-  });
-};
-
-async function sendViaSMTP({ from, to, subject, html }) {
-  const transport = createTransport();
+  const { signal, clear } = withTimeout(12000);
   try {
-    await transport.verify();
-    console.log("✅ SMTP conectado");
+    console.log("[BREVO] POST /v3/smtp/email …");
+    const res = await fetch("https://api.brevo.com/v3/smtp/email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "api-key": API_KEY,
+      },
+      body: JSON.stringify(payload),
+      signal,
+    });
 
-    return await transport.sendMail({ from, to, subject, html });
-  } catch (error) {
-    console.error("❌ SMTP error:", error.message);
-    throw error;
-  }
-}
-
-// ======================
-// API Pública (tu firma original)
-// ======================
-export const sendMail = async (from, to, subject, html) => {
-  try {
-    if (read("BREVO_API_KEY")) {
-      return await sendViaBrevoAPI({ from, to, subject, html });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      throw new Error(`Brevo API ${res.status}: ${body.slice(0, 300)}`);
     }
 
-    return await sendViaSMTP({ from, to, subject, html });
+    const data = await res.json();
+    console.log("[BREVO] OK messageId:", data?.messageId || data?.messageIds?.[0]);
+    return { messageId: data?.messageId || data?.messageIds?.[0] || "brevo-api" };
+  } catch (e) {
+    if (e.name === "AbortError") throw new Error("Timeout Brevo API (12s)");
+    throw e;
+  } finally {
+    clear();
+  }
+}
+
+/* ============ SMTP (fallback) ============ */
+function smtpOptions({ secureOverride } = {}) {
+  const secureEnv = (read("SMTP_SECURE", "false").toLowerCase() === "true");
+  const secure = typeof secureOverride === "boolean" ? secureOverride : secureEnv;
+
+  return {
+    host: read("SMTP_HOST"),
+    port: Number(read("SMTP_PORT", "587")),
+    secure, // 465=true, 587=false (STARTTLS)
+    auth: { user: read("SMTP_USER"), pass: read("SMTP_PASS") },
+    connectionTimeout: 12000,
+    greetingTimeout: 8000,
+    socketTimeout: 20000,
+    family: Number(read("SMTP_FAMILY", "4")), // IPv4
+    tls: { minVersion: "TLSv1.2" },
+  };
+}
+
+async function sendViaSMTP({ from, to, subject, html, text, replyTo }) {
+  const user = read("SMTP_USER");
+  const pass = read("SMTP_PASS");
+  const fromEnv = read("SMTP_FROM");
+  const toEnv = read("SMTP_RECIPIENT");
+
+  if (!user || !pass || !fromEnv || !toEnv) {
+    throw new Error("SMTP no configurado (SMTP_USER/PASS y SMTP_FROM/RECIPIENT)");
+  }
+
+  // 587 → 465 fallback
+  let tx = nodemailer.createTransport(smtpOptions({ secureOverride: false }));
+  try {
+    await tx.verify();
+    console.log("[SMTP] verify OK 587");
+  } catch (e) {
+    console.warn("[SMTP] 587 falló, probando 465:", e?.message);
+    tx = nodemailer.createTransport({ ...smtpOptions({ secureOverride: true }), port: 465 });
+    await tx.verify();
+    console.log("[SMTP] verify OK 465");
+  }
+
+  const info = await tx.sendMail({
+    from: from || fromEnv,
+    to: to || toEnv,
+    subject: subject || "Nueva consulta",
+    html: html || (text ? `<pre>${text}</pre>` : ""),
+    text: text || "",
+    replyTo,
+  });
+
+  console.log("[SMTP] enviado messageId:", info?.messageId);
+  return { messageId: info?.messageId || "smtp" };
+}
+
+/* ============ API pública (MISMA FIRMA) ============ */
+/** Mantiene la firma que ya usa tu InquiryService:
+ *  sendMail(from, to, subject, html)
+ *  (text y replyTo son opcionales)
+ */
+export const sendMail = async (from, to, subject, html, text = "", replyTo) => {
+  try {
+    if (read("BREVO_API_KEY")) {
+      return await sendViaBrevoAPI({ from, to, subject, html, text, replyTo });
+    }
+    return await sendViaSMTP({ from, to, subject, html, text, replyTo });
   } catch (error) {
-    console.error("sendMail error:", error.message);
-    return null;
+    console.error("[mailer] error:", error?.message || error);
+    return null; // tu service espera null para lanzar ErrorService
   }
 };
 
 export default { sendMail };
+
