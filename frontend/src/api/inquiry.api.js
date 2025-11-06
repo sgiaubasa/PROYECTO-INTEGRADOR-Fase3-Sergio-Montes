@@ -1,8 +1,9 @@
-import { API_URL } from "@/constants/api.constant.js";
+// frontend/src/api/inquiry.api.js
+import { API } from "@/constants/api.constant.js";
 
 const sendInquiry = async (values) => {
   try {
-    const response = await fetch(`${API_URL}/inquiries/send-mail`, {
+    const response = await fetch(`${API}/inquiries/send-mail`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
