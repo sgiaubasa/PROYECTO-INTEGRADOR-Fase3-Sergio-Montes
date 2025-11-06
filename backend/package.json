@@ -19,6 +19,7 @@
     "nodemon": "^3.1.10"
   },
   "dependencies": {
+    "@getbrevo/brevo": "^2.5.0",
     "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
@@ -30,3 +31,4 @@
     "nodemailer": "^7.0.6"
   }
 }
+
